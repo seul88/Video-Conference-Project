@@ -1,7 +1,10 @@
 const express = require('express');
-const app = express();
-const path = require('path');
-const PORT = process.env.PORT || 3000;
+
+const app = require('express')();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+
+const PORT = 3000;
 
 /*
 Send static page
@@ -10,7 +13,19 @@ app.use(express.static(__dirname + '/public'));
 
 
 /*
-Other routes
+Socket IO
  */
+io.on('connection', function (socket) {
 
-app.listen(PORT, () => console.log('Server running on localhost:' + PORT));
+    socket.emit('message', { message: 'Welcome client on the server!' });
+
+    socket.on('send', function (data) {
+        io.emit('message', { message: 'PONG' });
+    });
+});
+
+
+
+http.listen(PORT, function(){
+    console.log('Server http running on localhost:' + PORT);
+});
