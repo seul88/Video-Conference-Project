@@ -151,19 +151,20 @@ class Client {
 
         // Create init message
         let initMessage = {
-            cmd: "welcome"
+            cmd: "welcome",
+            username: this.myUsername
         }
 
-        this.socket.emit('send', initMessage);
+        this.socket.emit('welcome', initMessage);
 
         // Subscribe messages from the server
-        this.socket.on('message', this.parseMessageIO);
+        this.socket.on('send', this.parseMessageIO.bind(this));
     }
 
     createRTC()
     {
         let configuration = { 
-            //"iceServers": [{ "url": "stun:stun2.1.google.com:19302" }]
+            "iceServers": [{ "urls": "stun:stun.l.google.com:19302" }]
         }; 
 
         this.RTCConnection = RTCPeerConnection(configuration);
