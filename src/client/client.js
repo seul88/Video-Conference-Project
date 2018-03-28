@@ -7,7 +7,6 @@ class Client {
         console.log("Client creating...");
 
         this.myUsername = Math.random();
-        this.partnerUsername = null;
 
         console.log("Client username: " + this.myUsername);
 
@@ -57,12 +56,11 @@ class Client {
                 /*
                 {
                     cmd: "match",
-                    partnerUsername: "someone_nick",
+                    firstPlayer: "someone_nick",
+                    secondPlayer: "someone_nick",
                     whoCaller: "someone_nick" // or "my_nick"
                 }
                 */
-
-                this.partnerUsername = message.partnerUsername;
 
                 // Who start
                 if(message.whoCaller == this.myUsername)
@@ -140,7 +138,7 @@ class Client {
             this.socket.emit('send', candidateMessage);
          } 
 
-         // todo: on server - check for what user is that event 
+         // todo: on server - check for what user is that event  -- DONE
     }
 
     createIO()

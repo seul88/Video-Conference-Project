@@ -10,6 +10,7 @@ export class Main {
     {
         this.motd = "Welcome on the server!";
         this.players = {};
+        this.lobby = [];    // Players who are waitin' for a match
 
         /*
             Send static page
@@ -37,8 +38,11 @@ export class Main {
             let username = message.username;
 
             this.players[username] = {
-                socket: socket
+                socket: socket,
+                game: null
             };
+
+            this.lobby.push(username);
 
             console.log("User " + username + " connected.");
 
@@ -62,8 +66,74 @@ export class Main {
 
     handleDisconnect(username)
     {
-        console.log("User " + username + " disconnected.");
+        // Close match
+        if(this.players[username].game != null)
+            this.finishGame(this.players[username].game);
+
+        // Delete from lobby
+        this.removePlayerFromLobby(username);
+
+        // Delete from players
         delete this.players[username];
+
+        console.log("User " + username + " disconnected.");
+    }
+
+    createGame(firstPlayer, secondPlayer)
+    {
+        let game = {
+            firstPlayer: firstPlayer,
+            secondPlayer: secondPlayer
+        };
+
+        this.players[game.firstPlayer].game = game;
+        this.players[game.secondPlayer].game = game;
+
+        let matchMessage = {
+            cmd: "match",
+            firstPlayer: firstPlayer,
+            secondPlayer: secondPlayer,
+            whoCaller: firstPlayer
+        }
+
+        this.players[game.firstPlayer].socket.emit('send', matchMessage);
+        this.players[game.secondPlayer].socket.emit('send', matchMessage);
+
+        return game;
+    }
+
+    finishGame(game)
+    {
+        // Unattach game from players
+        this.players[game.firstPlayer].game = null;
+        this.players[game.secondPlayer].game = null;
+
+        // Add to lobby
+        this.lobby.push(game.firstPlayer);
+        this.lobby.push(game.secondPlayer);
+
+        // todo: send packet with finish game information
+    }
+
+    removePlayerFromLobby(username)
+    {
+        let indexInLobby = this.lobby.indexOf(username);
+
+        if (indexInLobby > -1) {
+            this.lobby.splice(indexInLobby, 1);
+        } 
+    }
+
+    getPartner(username)
+    {
+        let game = this.players[username].game;
+
+        if(game == null) console.log("ERROR, player doesn't have active game");
+
+        if(game.firstPlayer == username)
+            return game.secondPlayer;
+        else
+            return game.firstPlayer;
     }
 
     handleMessages(message, username)
@@ -72,6 +142,15 @@ export class Main {
 
         switch(message.cmd)
         {
+            case "offer":
+            case "answer":
+            case "candidate":
+            {
+                let partner = this.players[this.getPartner(game)];
+                partner.socket.emit('send', message);
+
+                break;
+            }
 
         }
     }
