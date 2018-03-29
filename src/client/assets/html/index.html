@@ -3,23 +3,30 @@
 <head>
     <title>PT PUT</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"></head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 	<link rel="stylesheet" type="text/css" href="mystyle.css">
+</head>
 
 <body>
-		<h1>Hello PUT!</h1>
-
+		<h1 id="hello">Video Conference Project</h1>
 <div id="container">
-		<form>
-			
-			<input type="text" placeholder="login" onfocus="this.placeholder=''" onblur="this.placeholder='login'" >
-			
-			<input type="submit" value="Dołącz!">
-			
+		<form id="frm1">		
+			<input type="text" placeholder="login" onfocus="this.placeholder=''" onblur="this.placeholder='login'" >			
 		</form>
-	</div>
+		<button onclick="myFunction()" id="btn1">Dołącz</button>
+</div>
 
+<script>
+function myFunction() {
+    var x = document.getElementById("frm1");
+    var text = "Hello  " + x.elements[0].value
+	document.getElementById("hello").innerHTML = text;
+	document.getElementById("container").style.display="none";
+	console.log(text);
+
+}
+</script>
 <script src="client.js"></script>
 </body>
 </html>
