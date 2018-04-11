@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "compile": "webpack",
-    "dev": "webpack --watch",
-    "test": "node dist/server.js"
+    "start": "node ./dist/server.js 3000 localhost",
+    "cs": "webpack && node ./dist/server.js 3000 localhost"
   },
   "repository": {
     "type": "git",

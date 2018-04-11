@@ -6,7 +6,7 @@ Type in terminal:
 ```
 npm install
 npm run compile
-npm run test
+npm run start
 ```
 
 then open http://localhost:3000 in browser

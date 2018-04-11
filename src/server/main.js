@@ -2,12 +2,13 @@ const express = require('express');
 const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+const crypto = require("crypto");
 
+import { Game } from './game';
 
 export class Main {
 
-    constructor(port)
-    {
+    constructor() {
         this.motd = "Welcome on the server!";
         this.players = {};
         this.lobby = [];    // Players who are waitin' for a match
@@ -26,132 +27,137 @@ export class Main {
         /*
             Start listening
         */
-        http.listen(port, () => {
-            console.log('Server http running on localhost:' + port);
+        http.listen(process.argv[2], process.argv[3], () => {
+            console.log('Server http running on ' + process.argv[3] + ':' + process.argv[2]);
         });
     }
 
-    handleConnection(socket)
-    {
+    handleConnection(socket) {
         // Handle username from first packet
         socket.once('welcome', (message) => {
+            console.log("User " + message.username + " connected.");
+
+            let id = crypto.randomBytes(20).toString('hex');
             let username = message.username;
 
-            this.players[username] = {
+            let player = this.players[id] = {
                 socket: socket,
+                id: id,
+                username: username,
                 game: null
             };
 
-            this.lobby.push(username);
-
-            console.log("User " + username + " connected.");
+            this.lobby.push(player);
 
             socket.on('send', (message) => {
-                this.handleMessages(message, username)
+                this.handleMessages(message, player);
             });
 
             socket.on('disconnect', () => {
-                this.handleDisconnect(username)
+                this.handleDisconnect(player);
             });
 
-            let initMessage = {
+            socket.emit('send', {
                 cmd: "welcome",
                 motd: this.motd,
-                username: username
-            }
+                username: username,
+                id: id
+            });
 
-            socket.emit('send', initMessage);
+            this.matchLobby();
         })
     }
 
-    handleDisconnect(username)
-    {
+    handleDisconnect(player) {
+        console.log("User " + player.username + " disconnected.");
+
         // Close match
-        if(this.players[username].game != null)
-            this.finishGame(this.players[username].game);
+        if (player.game != null)
+            this.finishGame(player.game);
 
         // Delete from lobby
-        this.removePlayerFromLobby(username);
+        this.removePlayerFromLobby(player);
 
         // Delete from players
-        delete this.players[username];
-
-        console.log("User " + username + " disconnected.");
+        delete this.players[player.id];
     }
 
-    createGame(firstPlayer, secondPlayer)
-    {
-        let game = {
-            firstPlayer: firstPlayer,
-            secondPlayer: secondPlayer
-        };
-
-        this.players[game.firstPlayer].game = game;
-        this.players[game.secondPlayer].game = game;
-
-        let matchMessage = {
-            cmd: "match",
-            firstPlayer: firstPlayer,
-            secondPlayer: secondPlayer,
-            whoCaller: firstPlayer
+    createGame(player1, player2) {
+        // create game and assign
+        let game = new Game();
+        game.start([player1, player2]);
+        
+        let msg = {
+            cmd: "new_game",
+            caller: player1.id
         }
 
-        this.players[game.firstPlayer].socket.emit('send', matchMessage);
-        this.players[game.secondPlayer].socket.emit('send', matchMessage);
-
-        return game;
+        for (let player of game.players) {
+            player.game = game;
+            player.socket.emit('send', msg);
+        }
     }
 
-    finishGame(game)
-    {
-        // Unattach game from players
-        this.players[game.firstPlayer].game = null;
-        this.players[game.secondPlayer].game = null;
+    finishGame(game) {
+        // Add players to lobby
+        for (let player of game.players) {
+            player.socket.emit('send', {
+                cmd: "finish_game"
+            });
 
-        // Add to lobby
-        this.lobby.push(game.firstPlayer);
-        this.lobby.push(game.secondPlayer);
+            player.game = null;
+            this.lobby.push(player);
+        }
 
-        // todo: send packet with finish game information
+        // Finish game
+        game.finish();
     }
 
-    removePlayerFromLobby(username)
-    {
-        let indexInLobby = this.lobby.indexOf(username);
+    removePlayerFromLobby(player) {
+        let indexInLobby = this.lobby.indexOf(player);
 
         if (indexInLobby > -1) {
             this.lobby.splice(indexInLobby, 1);
-        } 
+        }
     }
 
-    getPartner(username)
-    {
-        let game = this.players[username].game;
-
-        if(game == null) console.log("ERROR, player doesn't have active game");
-
-        if(game.firstPlayer == username)
-            return game.secondPlayer;
-        else
-            return game.firstPlayer;
+    forPartners(player, callback) {
+        if(player.game == null)
+            throw "Player " + player.username + " does not have any active game";
+    
+        // Add players to lobby
+        for (let partner of player.game.players) {
+            if (player != partner)
+                callback(partner);
+        }
     }
 
-    handleMessages(message, username)
-    {
+    handleMessages(message, player) {
         console.log("Message from client:", message);
 
-        switch(message.cmd)
-        {
+        switch (message.cmd) {
             case "offer":
             case "answer":
             case "candidate":
-            {
-                let partner = this.players[this.getPartner(game)];
-                partner.socket.emit('send', message);
+                {
+                    this.forPartners(player, (partner) => {
+                        partner.socket.emit('send', message);
+                    });
 
-                break;
-            }
+                    break;
+                }
 
+        }
+    }
+
+    matchLobby()
+    {
+        if(this.lobby.length >= 2)
+        {
+            this.createGame(this.lobby[0], this.lobby[1]);
+
+            this.lobby.shift();
+            this.lobby.shift();
         }
     }
 

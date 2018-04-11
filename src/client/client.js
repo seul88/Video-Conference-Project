@@ -2,133 +2,147 @@ const webrtc = require('webrtc-adapter');
 const io = require('socket.io-client');
 const adapter = require('webrtc-adapter');
 
+/*
+https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling#Handling_the_invitation
+*/
+
+
 class Client {
     constructor() {
         console.log("Client creating...");
 
-        this.myUsername = Math.random();
-
-        console.log("Client username: " + this.myUsername);
+        this.socket = null;
+        this.username = 'Test_player';
+        this.id = null;
 
         this.createIO();
         this.createRTC();
-
     }
 
-    parseMessageIO(message)
-    {
+    parseMessageIO(message) {
         console.log("Message from server:", message);
 
-        switch(message.cmd)
-        {
+        switch (message.cmd) {
             case "welcome":
-            {
-                /*
                 {
-                    cmd: "welcome",
-                    motd: "Hello from the server!",
-                    username: "your_username"
-                }
-                */
+                    /*
+                    {
+                        cmd: "welcome",
+                        motd: "Hello from the server!",
+                        username: "your_username",
+                        id: "generated_id"
+                    }
+                    */
 
-                console.log(message.motd);
-                this.myUsername = message.username;
+                    console.log(message.motd);
+                    this.username = message.username;
+                    this.id = message.id;
 
-                break;
-            }
-
-            case "candidate":
-            {
-                /*
-                {
-                    cmd: "candidate",
-                    data: {...} // ice object
-                }
-                */
-
-                this.RTCConnection.addIceCandidate(new RTCIceCandidate(message.data)); 
-                
-                break;
-            }
-
-            case "match":
-            {
-                /*
-                {
-                    cmd: "match",
-                    firstPlayer: "someone_nick",
-                    secondPlayer: "someone_nick",
-                    whoCaller: "someone_nick" // or "my_nick"
-                }
-                */
-
-                // Who start
-                if(message.whoCaller == this.myUsername)
-                {
-                    // Create offer message
-                    this.RTCConnection.createOffer((offer) => {
-                        let offerMessage = {
-                            cmd: "offer",
-                            data: offer
-                        }
-
-                        // Server must check for what user is that offer (from the match object)
-                        this.socket.emit('send', offerMessage);
-
-                        this.RTCConnection.setLocalDescription(offer);
-                    });
+                    break;
                 }
 
-                break;
-            }
-
-            case "offer":
-            {
-                /*
+            case "new_game":
                 {
-                    cmd: "offer",
-                    data: {...} // offer object
-                }
-                */
+                    /*
+                    {
+                        cmd: "new_game",
+                        caller: 'id'
+                    }
+                    */
 
-                this.RTCConnection.setRemoteDescription(new RTCSessionDescription(message.data));
+                    // Who start?
+                    if (message.caller == this.id) {
+                        console.log("I am caller!");
 
-                this.RTCConnection.createAnswer((answer) => {
-
-                    this.RTCConnection.setLocalDescription(answer);
-
-                    let answerMessage = {
-                        cmd: "answer",
-                        data: answer
+                        // Create offer message
+                        this.RTCConnection.createOffer().then((offer) => {
+                            return this.RTCConnection.setLocalDescription(offer);
+                        })
+                            .then(() => {
+                                this.socket.emit('send', {
+                                    cmd: "offer",
+                                    data: this.RTCConnection.localDescription
+                                });
+                            })
+                            .catch((reason) => {
+                                console.log(reason);
+                            });
                     }
 
-                    // Server must check for what user is that answer (from the match object)
-                    this.socket.emit('send', answerMessage);
+                    break;
+                }
 
-                });
+            case "candidate":
+                {
+                    /*
+                    {
+                        cmd: "candidate",
+                        data: {...} // ice object
+                    }
+                    */
 
-                break;
-            }
+                    this.RTCConnection.addIceCandidate(new RTCIceCandidate(message.data));
+
+                    break;
+                }
+
+            case "offer":
+                {
+                    /*
+                    {
+                        cmd: "offer",
+                        data: {...} // offer object
+                    }
+                    */
+
+                    this.RTCConnection.setRemoteDescription(message.data).then(() => {
+                        //return navigator.mediaDevices.getUserMedia(mediaConstraints);
+                    })
+                        .then((stream) => {
+                            //document.getElementById("local_video").srcObject = stream;
+                            //return myPeerConnection.addStream(stream);
+                        })
+                        .then(() => {
+                            return this.RTCConnection.createAnswer();
+                        })
+                        .then((answer) => {
+                            this.RTCConnection.setLocalDescription(answer);
+                            return answer;
+                        })
+                        .then((answer) => {
+                            // Send the answer to the remote peer using the signaling server
+                            this.socket.emit('send', {
+                                cmd: "answer",
+                                data: answer
+                            });
+                        })
+                        .catch((error) => {
+                            console.log(error);
+                        });
+
+                    break;
+                }
 
             case "answer":
-            {
-                /*
                 {
-                    cmd: "answer",
-                    data: {...} // offer object
+                    /*
+                    {
+                        cmd: "answer",
+                        data: {...} // offer object
+                    }
+                    */
+
+                    this.RTCConnection.setRemoteDescription(message.data).then(() => {
+                        console.log("Answer applied to RemoteDescription")
+                    });
+
+                    break;
                 }
-                */
-
-                this.RTCConnection.setRemoteDescription(new RTCSessionDescription(message.data)); 
-
-                break;
-            }
         }
     }
 
-    iceCandidateHandler(event)
-    {
-        if (event.candidate) { 
+    iceCandidateHandler(event) {
+        if (event.candidate) {
             // Create candidate message
             let candidateMessage = {
                 cmd: "candidate",
@@ -136,21 +150,18 @@ class Client {
             }
 
             this.socket.emit('send', candidateMessage);
-         } 
-
-         // todo: on server - check for what user is that event  -- DONE
+        }
     }
 
-    createIO()
-    {
+    createIO() {
         console.log("Creating IO connection...");
 
-        this.socket = io.connect('http://localhost:3000');
+        this.socket = io.connect(document.location.origin);
 
         // Create init message
         let initMessage = {
             cmd: "welcome",
-            username: this.myUsername
+            username: this.username
         }
 
         this.socket.emit('welcome', initMessage);
@@ -159,17 +170,25 @@ class Client {
         this.socket.on('send', this.parseMessageIO.bind(this));
     }
 
-    createRTC()
-    {
-        let configuration = { 
+    createRTC() {
+        let configuration = {
             "iceServers": [{ "urls": "stun:stun.l.google.com:19302" }]
-        }; 
+        };
 
         this.RTCConnection = RTCPeerConnection(configuration);
 
+        // text channel for test
+        let channel = this.RTCConnection.createDataChannel("chat", {negotiated: true, id: 0});
+        channel.onopen = (event) => {
+            channel.send('Hi you! Message from ' + this.id);
+        }
+        channel.onmessage = (event) => {
+            console.log(event.data);
+        }
+
         //todo AddStream to connection
 
-        this.RTCConnection.onicecandidate = this.iceCandidateHandler;
+        this.RTCConnection.onicecandidate = this.iceCandidateHandler.bind(this);
     }
 }
 
