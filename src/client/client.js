@@ -6,6 +6,7 @@ const adapter = require('webrtc-adapter');
 https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling#Handling_the_invitation
 */
 
+import {Renderer} from './renderer'
 
 class Client {
     constructor() {
@@ -17,6 +18,7 @@ class Client {
 
         this.createIO();
         this.createRTC();
+        this.rendered = new Renderer();
     }
 
     parseMessageIO(message) {

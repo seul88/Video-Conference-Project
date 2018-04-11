@@ -22,7 +22,8 @@ const client = {
         },
         plugins: [
             new CopyWebpackPlugin([
-                { from: './src/client/assets/html' }
+                { from: './src/client/assets/html' },
+                { from: './src/client/assets/images', to: 'images' }
             ]),
         ]
 };
