@@ -29,8 +29,8 @@ export class Renderer {
                 "images/blank.jpg",
                 "images/cables/closed/cable_closed.svg",
                 "images/cables/opened/cable_open.svg",
-				"images/timer.svg",
-				"images/circle.svg"
+                "images/timer.svg",
+                "images/circle.svg"
             ])
             .load(this.setup.bind(this));
     }
@@ -53,13 +53,6 @@ export class Renderer {
         return x;
     }
 
-	
-							
-								
-							
-							
-							
-	
     setup() {
         let button = new PIXI.Sprite(PIXI.loader.resources["images/blank.png"].texture);
         let button2 = new PIXI.Sprite(PIXI.loader.resources["images/blank.png"].texture);
@@ -90,27 +83,27 @@ export class Renderer {
         var but4down = false;
 
         let x = this.generateRandomNumber();
-		
-		let timer =  new PIXI.Sprite(PIXI.loader.resources["images/timer.svg"].texture);
-								timer.anchor.set(0.0);			
-								timer.x = 435;
-								timer.y = 480;		
-								this.app.stage.addChild(timer);								
-								
-								this.app.ticker.add(function(delta) {
 
-									timer.rotation += 0.005 * delta;
-								});
-														
-								let clockwheel = new PIXI.Sprite(PIXI.loader.resources["images/circle.svg"].texture);
-									
-								clockwheel.x = 422;
-								clockwheel.y = 468;
-								clockwheel.height = 28;
-								clockwheel.width = 28;
-								this.app.stage.addChild(clockwheel);
-		
-		
+        let timer = new PIXI.Sprite(PIXI.loader.resources["images/timer.svg"].texture);
+        timer.anchor.set(0.0);
+        timer.x = 435;
+        timer.y = 480;
+        this.app.stage.addChild(timer);
+
+        this.app.ticker.add(function (delta) {
+
+            timer.rotation += 0.005 * delta;
+        });
+
+        let clockwheel = new PIXI.Sprite(PIXI.loader.resources["images/circle.svg"].texture);
+
+        clockwheel.x = 422;
+        clockwheel.y = 468;
+        clockwheel.height = 28;
+        clockwheel.width = 28;
+        this.app.stage.addChild(clockwheel);
+
+
         button.visible = true;
         button.tint = 0x57829c;
         button.hitArea = new PIXI.Rectangle(0, 0, 100, 100);
@@ -191,5 +184,5 @@ export class Renderer {
 
         this.app.stage.addChild(button4);
     }
-    
+
 }

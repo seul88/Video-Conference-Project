@@ -86,7 +86,7 @@ export class Main {
         // create game and assign
         let game = new Game();
         game.start([player1, player2]);
-        
+
         let msg = {
             cmd: "new_game",
             caller: player1.id
@@ -122,9 +122,9 @@ export class Main {
     }
 
     forPartners(player, callback) {
-        if(player.game == null)
+        if (player.game == null)
             throw "Player " + player.username + " does not have any active game";
-    
+
         // Add players to lobby
         for (let partner of player.game.players) {
             if (player != partner)
@@ -150,10 +150,8 @@ export class Main {
         }
     }
 
-    matchLobby()
-    {
-        if(this.lobby.length >= 2)
-        {
+    matchLobby() {
+        if (this.lobby.length >= 2) {
             this.createGame(this.lobby[0], this.lobby[1]);
 
             this.lobby.shift();

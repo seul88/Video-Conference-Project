@@ -6,7 +6,7 @@ const adapter = require('webrtc-adapter');
 https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling#Handling_the_invitation
 */
 
-import {Renderer} from './renderer'
+import { Renderer } from './renderer'
 
 class Client {
     constructor() {
@@ -17,7 +17,6 @@ class Client {
         this.id = null;
 
         this.createIO();
-        this.createRTC();
         this.rendered = new Renderer();
     }
 
@@ -51,6 +50,7 @@ class Client {
                         caller: 'id'
                     }
                     */
+                   this.createRTC();
 
                     // Who start?
                     if (message.caller == this.id) {
@@ -73,7 +73,17 @@ class Client {
 
                     break;
                 }
+            case "finish_game":
+                {
+                    /*
+                    {
+                        cmd: "finish_game",
+                    }
+                    */
+                    this.closeRTC();
 
+                    break;
+                }
             case "candidate":
                 {
                     /*
@@ -143,18 +153,6 @@ class Client {
         }
     }
 
-    iceCandidateHandler(event) {
-        if (event.candidate) {
-            // Create candidate message
-            let candidateMessage = {
-                cmd: "candidate",
-                data: event.candidate
-            }
-
-            this.socket.emit('send', candidateMessage);
-        }
-    }
-
     createIO() {
         console.log("Creating IO connection...");
 
@@ -180,7 +178,7 @@ class Client {
         this.RTCConnection = RTCPeerConnection(configuration);
 
         // text channel for test
-        let channel = this.RTCConnection.createDataChannel("chat", {negotiated: true, id: 0});
+        let channel = this.RTCConnection.createDataChannel("chat", { negotiated: true, id: 0 });
         channel.onopen = (event) => {
             channel.send('Hi you! Message from ' + this.id);
         }
@@ -192,6 +190,42 @@ class Client {
 
         this.RTCConnection.onicecandidate = this.iceCandidateHandler.bind(this);
     }
+
+    closeRTC() {
+        if (this.RTCConnection) {
+
+            /*
+            var remoteVideo = document.getElementById("received_video");
+            var localVideo = document.getElementById("local_video");
+      
+            if (remoteVideo.srcObject) {
+                remoteVideo.srcObject.getTracks().forEach(track => track.stop());
+                remoteVideo.srcObject = null;
+            }
+
+            if (localVideo.srcObject) {
+                localVideo.srcObject.getTracks().forEach(track => track.stop());
+                localVideo.srcObject = null;
+            }
+            */
+
+            this.RTCConnection.close();
+            this.RTCConnection = null;
+        }
+    }
+
+    iceCandidateHandler(event) {
+        if (event.candidate) {
+            // Create candidate message
+            let candidateMessage = {
+                cmd: "candidate",
+                data: event.candidate
+            }
+
+            this.socket.emit('send', candidateMessage);
+        }
+    }
+
 }
 
 
