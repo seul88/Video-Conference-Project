@@ -2,7 +2,9 @@ import * as PIXI from 'pixi.js'
 
 export class Renderer {
     constructor() {
+       
 
+	   /* ------------------------------------ CANVAS ------------------------------------ */
         this.app = new PIXI.Application({
             width: 1200,
             height: 900,
@@ -14,6 +16,8 @@ export class Renderer {
 
         document.body.appendChild(this.app.view);
 
+		
+		/* ------------------------------------ IMAGES - load from directory ------------------------------------ */
         PIXI.loader
             .add([
                 "images/bomb_.svg",
@@ -35,7 +39,7 @@ export class Renderer {
             .load(this.setup.bind(this));
     }
 
-    showText(tekst) {
+    showText(tekst, x) {
         let text = new PIXI.Text(tekst, {
             fontFamily: 'Arial',
             fontSize: 36,
@@ -43,7 +47,7 @@ export class Renderer {
             fill: 'white'
         });
         text.y = this.app.screen.height - 175;
-        text.x = 300;
+        text.x = x;
 
         this.app.stage.addChild(text);
     }
@@ -52,8 +56,37 @@ export class Renderer {
         let x = Math.floor((Math.random() * 4) + 1);
         return x;
     }
-
+	
+	
+	
+	// 
+	
+    EndWin(blurFilter1){
+		blurFilter1.enabled = true; 	
+        }
+	
+	/*
+	 EndWin(blurFilter1, timer, bomb, cable_closed_1, cable_closed_2, cable_closed_3, cable_closed_4, cable_opened_1, cable_opened_2, cable_opened_3, cable_opened_4 ) {
+	    blurFilter1.enabled = true;     
+        blurFilter1.blur = 8;
+		bomb.filters = [blurFilter1];	
+		cable_closed_1.filters = [blurFilter1];
+		cable_closed_2.filters = [blurFilter1];
+		cable_closed_3.filters = [blurFilter1];
+		cable_closed_4.filters = [blurFilter1];
+		cable_opened_1.filters = [blurFilter1];
+		cable_opened_2.filters = [blurFilter1];
+		cable_opened_3.filters = [blurFilter1];
+		cable_opened_4.filters = [blurFilter1];
+	
+	 }
+	*/
+	
     setup() {
+		
+		/* ------------------------------------ IMAGES - add to canvas ------------------------------------ */
+		
+		
         let button = new PIXI.Sprite(PIXI.loader.resources["images/blank.png"].texture);
         let button2 = new PIXI.Sprite(PIXI.loader.resources["images/blank.png"].texture);
         let button3 = new PIXI.Sprite(PIXI.loader.resources["images/blank.png"].texture);
@@ -77,15 +110,19 @@ export class Renderer {
         this.app.stage.addChild(cable_closed_3);
         this.app.stage.addChild(cable_closed_4);
 
-        var but1down = false;
-        var but2down = false;
-        var but3down = false;
-        var but4down = false;
 
-        let x = this.generateRandomNumber();
 
+		/* ------------------------------------ NUM and TEXT vars and consts ------------------------------------ */
+		
+		let x = this.generateRandomNumber();
+		
         var textFail = "Kruci, skucha :(";
         var textWin = "Bomba rozbrojona ;)";
+		
+		
+		
+		/* ------------------------------------ TIMER ------------------------------------ */
+		
         
         
         let timer = new PIXI.Sprite(PIXI.loader.resources["images/timer.svg"].texture);
@@ -105,35 +142,56 @@ export class Renderer {
 
         this.app.stage.addChild(clockwheel);
 
-        
-         this.app.ticker.add(function (delta) {
-
-            timer.rotation += 0.005 * delta;
-            clockwheel.rotation += 0.005 * delta;
+        var timerRotationSpeed = 0.005;
+		
+        this.app.ticker.add(function () {
+            timer.rotation += timerRotationSpeed;
+            clockwheel.rotation += timerRotationSpeed;
         });
 
 
-        
-        
-        
+        /* ------------------------------------ BUTTONS ------------------------------------ */
+		
+		var but1down = false;
+        var but2down = false;
+        var but3down = false;
+        var but4down = false;
+		
+		
         button.visible = true;
         button.tint = 0x57829c;
         button.hitArea = new PIXI.Rectangle(0, 0, 100, 100);
-        button.x = 170;
-        button.y = 65;
         button.interactive = true;
         button.buttonMode = true;
+		
+        button.x = 170;
+        button.y = 65;
+
+		var blurFilter1 = new PIXI.filters.BlurFilter();    		      
+        blurFilter1.blur = 8;
+		blurFilter1.enabled = false;  
+		
         button.on('pointerdown', (event) => {
             if (but1down === false) {
                 this.app.stage.removeChild(cable_closed_1);
                 this.app.stage.addChild(cable_opened_1);
                 but1down = true;
 
-                if (x == 1) this.showText(textWin);
-                else this.showText(textFail);
+                if (x == 1) {        
+					this.showText(textWin, 50);
+			       // blurFilter1.enabled = true;
+			         EndWin(blurFilter1);
+				  //  tutaj zamiast blurFiler1.enabled chciałem wywoływać : EndWin(blurFilter1) 
+      				this.app.ticker.add(function () {
+                    timer.rotation -= timerRotationSpeed;
+                    clockwheel.rotation -= timerRotationSpeed;
+                    });
+				
+				
+				}
+                else this.showText(textFail, 700);
             }
         });
-
         this.app.stage.addChild(button);
 
         button2.visible = true;
@@ -149,11 +207,16 @@ export class Renderer {
                 this.app.stage.addChild(cable_opened_2);
                 but2down = true;
 
-                if (x == 2) this.showText(textWin)
-                else this.showText(textFail);
+                if (x == 2) {this.showText(textWin, 50);
+				               blurFilter1.enabled = true;
+							       this.app.ticker.add(function () {
+            timer.rotation -= timerRotationSpeed;
+            clockwheel.rotation -= timerRotationSpeed;
+        });
+							}
+                else this.showText(textFail, 700);
             }
         });
-
         this.app.stage.addChild(button2);
 
         button3.visible = true;
@@ -169,11 +232,15 @@ export class Renderer {
                 this.app.stage.addChild(cable_opened_3);
                 but3down = true;
 
-                if (x == 3) this.showText(textWin)
-                else this.showText(textFail);
+                if (x == 3) {this.showText(textWin, 50);
+					          blurFilter1.enabled = true;
+							    this.app.ticker.add(function () {
+            timer.rotation -= timerRotationSpeed;
+            clockwheel.rotation -= timerRotationSpeed;
+        });}
+                else this.showText(textFail, 700);
             }
         });
-
         this.app.stage.addChild(button3);
 
         button4.visible = true;
@@ -189,12 +256,34 @@ export class Renderer {
                 this.app.stage.addChild(cable_opened_4);
                 but4down = true;
 
-                if (x == 4) this.showText(textWin)
-                else this.showText(textFail);
+                if (x == 4) {this.showText(textWin, 50);
+					           blurFilter1.enabled = true;
+							       this.app.ticker.add(function () {
+            timer.rotation -= timerRotationSpeed;
+            clockwheel.rotation -= timerRotationSpeed;
+        });
+							 }
+                else this.showText(textFail, 700);
             }
         });
-
         this.app.stage.addChild(button4);
-    }
+		
+		
+		/* ------------------------------------ GRAPHICAL FILTERS ------------------------------------ */
+		
+		
+		bomb.filters = [blurFilter1];	
+		cable_closed_1.filters = [blurFilter1];
+		cable_closed_2.filters = [blurFilter1];
+		cable_closed_3.filters = [blurFilter1];
+		cable_closed_4.filters = [blurFilter1];
+		cable_opened_1.filters = [blurFilter1];
+		cable_opened_2.filters = [blurFilter1];
+		cable_opened_3.filters = [blurFilter1];
+		cable_opened_4.filters = [blurFilter1];	
+		
+	
+		
 
+    }
 }
