@@ -20,6 +20,7 @@ const client = {
                 }
             ]
         },
+        devtool: 'source-map',
         plugins: [
             new CopyWebpackPlugin([
                 { from: './src/client/assets/html' },
@@ -37,6 +38,7 @@ const server = {
         path: path.resolve(__dirname, 'dist'),
         filename: 'server.js'
     },
+    devtool: 'source-map',
     target: 'node',
     node: {
         __dirname: false,
