@@ -84,26 +84,38 @@ export class Renderer {
 
         let x = this.generateRandomNumber();
 
+        var textFail = "Kruci, skucha :(";
+        var textWin = "Bomba rozbrojona ;)";
+        
+        
         let timer = new PIXI.Sprite(PIXI.loader.resources["images/timer.svg"].texture);
-        timer.anchor.set(0.0);
+        timer.anchor.set(0.5);
         timer.x = 435;
         timer.y = 480;
         this.app.stage.addChild(timer);
 
-        this.app.ticker.add(function (delta) {
-
-            timer.rotation += 0.005 * delta;
-        });
-
+       
         let clockwheel = new PIXI.Sprite(PIXI.loader.resources["images/circle.svg"].texture);
 
-        clockwheel.x = 422;
-        clockwheel.y = 468;
+        clockwheel.x = 435;
+        clockwheel.y = 478;
         clockwheel.height = 28;
         clockwheel.width = 28;
+        clockwheel.anchor.set(0.5);
+
         this.app.stage.addChild(clockwheel);
 
+        
+         this.app.ticker.add(function (delta) {
 
+            timer.rotation += 0.005 * delta;
+            clockwheel.rotation += 0.005 * delta;
+        });
+
+
+        
+        
+        
         button.visible = true;
         button.tint = 0x57829c;
         button.hitArea = new PIXI.Rectangle(0, 0, 100, 100);
@@ -117,8 +129,8 @@ export class Renderer {
                 this.app.stage.addChild(cable_opened_1);
                 but1down = true;
 
-                if (x == 1) this.showText('Bomba rozbrojona :)')
-                else this.showText('Niestety, BuuUUUM ;(');
+                if (x == 1) this.showText(textWin);
+                else this.showText(textFail);
             }
         });
 
@@ -137,8 +149,8 @@ export class Renderer {
                 this.app.stage.addChild(cable_opened_2);
                 but2down = true;
 
-                if (x == 2) this.showText('Bomba rozbrojona :)')
-                else this.showText('Niestety, BuuUUUM ;(');
+                if (x == 2) this.showText(textWin)
+                else this.showText(textFail);
             }
         });
 
@@ -157,8 +169,8 @@ export class Renderer {
                 this.app.stage.addChild(cable_opened_3);
                 but3down = true;
 
-                if (x == 3) this.showText('Bomba rozbrojona :)')
-                else this.showText('Niestety, BuuUUUM ;(');
+                if (x == 3) this.showText(textWin)
+                else this.showText(textFail);
             }
         });
 
@@ -177,8 +189,8 @@ export class Renderer {
                 this.app.stage.addChild(cable_opened_4);
                 but4down = true;
 
-                if (x == 4) this.showText('Bomba rozbrojona :)')
-                else this.showText('Niestety, BuuUUUM ;(');
+                if (x == 4) this.showText(textWin)
+                else this.showText(textFail);
             }
         });
 
