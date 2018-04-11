@@ -6,6 +6,8 @@ const adapter = require('webrtc-adapter');
 https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling#Handling_the_invitation
 */
 
+import { GameClient } from './../shared/GameClient';
+import { BombGame } from './../shared/games/BombGame';
 import { Renderer } from './renderer'
 
 class Client {
@@ -18,6 +20,9 @@ class Client {
 
         this.createIO();
         this.rendered = new Renderer();
+        
+        this.game = null;
+        this.gameClient = null;
     }
 
     parseMessageIO(message) {
@@ -70,6 +75,13 @@ class Client {
                                 console.log(reason);
                             });
                     }
+
+                    this.game = new BombGame();
+                    this.game.onChange = (state) => {
+                        console.log(state);
+                    };
+                    this.gameClient = new GameClient(this.game, this.socket, this.id);
+                    this.gameClient.start();
 
                     break;
                 }
