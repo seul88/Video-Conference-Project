@@ -1,6 +1,8 @@
 const webrtc = require('webrtc-adapter');
 const io = require('socket.io-client');
 const adapter = require('webrtc-adapter');
+var button = document.getElementById("sendMessageButton");
+
 
 /*
 https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling#Handling_the_invitation
@@ -15,6 +17,7 @@ class Client {
         console.log("Client creating...");
 
         this.socket = null;
+        this.textChannel = null;
         this.username = 'Test_player';
         this.id = null;
 
@@ -92,7 +95,7 @@ class Client {
                         cmd: "finish_game",
                     }
                     */
-                    this.closeRTC();
+                    this.closeRTC(); 
 
                     break;
                 }
@@ -190,17 +193,30 @@ class Client {
         this.RTCConnection = RTCPeerConnection(configuration);
 
         // text channel for test
-        let channel = this.RTCConnection.createDataChannel("chat", { negotiated: true, id: 0 });
-        channel.onopen = (event) => {
-            channel.send('Hi you! Message from ' + this.id);
+        this.textChannel = this.RTCConnection.createDataChannel("chat", { negotiated: true, id: 0 });
+        this.textChannel.onopen = (event) => {
+            this.textChannel.send('Hi you! Message from ' + this.id);
         }
-        channel.onmessage = (event) => {
-            console.log(event.data);
+        this.textChannel.onmessage = (event) => {
+            $('#messages').append($('<li>').text(event.data));
         }
 
-        //todo AddStream to connection
 
         this.RTCConnection.onicecandidate = this.iceCandidateHandler.bind(this);
+
+        button.onclick = (event) => {
+            this.sendMessage();
+        }
+    }
+
+    sendMessage(){
+
+        let message = $('#m').val();
+        $('#m').val('');
+
+        this.textChannel.send(this.username+': '+message);
+        $('#messages').append($('<li>').text(this.username+': '+message));
+
     }
 
     closeRTC() {
