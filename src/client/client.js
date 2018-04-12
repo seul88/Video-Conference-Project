@@ -2,6 +2,11 @@ const webrtc = require('webrtc-adapter');
 const io = require('socket.io-client');
 const adapter = require('webrtc-adapter');
 
+var button = document.getElementById("sendMessageButton");
+var joinButton = document.getElementById("btn1");
+
+
+
 /*
 https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling#Handling_the_invitation
 */
@@ -11,11 +16,12 @@ import { BombGame } from './../shared/games/BombGame';
 import { Renderer } from './renderer'
 
 class Client {
-    constructor() {
+    constructor(username) {
         console.log("Client creating...");
 
         this.socket = null;
-        this.username = 'Test_player';
+        this.textChannel = null;
+        this.username = username;
         this.id = null;
 
         this.createIO();
@@ -240,7 +246,21 @@ class Client {
 
 }
 
+function  prepareInterface (username) {
+    var text = "Hello  " + username
+	document.getElementById("hello").innerHTML = text;
+	document.getElementById("formdiv").style.display="none";
+	document.getElementById("camdiv").style.display="block";
+    console.log(text);
+}
 
-window.onload = () => {
-    let client = new Client();
+//connection starts on button click
+joinButton.onclick = (event) => {
+    let username = document.getElementById("form1").elements[0].value
+
+    prepareInterface(username);
+    
+
+    let client = new Client(username);
 };
+
