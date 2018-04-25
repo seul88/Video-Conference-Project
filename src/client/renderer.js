@@ -20,7 +20,8 @@ export class Renderer {
 		/* ------------------------------------ IMAGES - load from directory ------------------------------------ */
         PIXI.loader
             .add([
-                "images/bomb_.svg",
+                "images/bombv2.svg",
+				"images/clock.svg",
                 "images/cables/closed/1.svg",
                 "images/cables/closed/2.svg",
                 "images/cables/closed/3.svg",
@@ -92,9 +93,12 @@ export class Renderer {
         let button3 = new PIXI.Sprite(PIXI.loader.resources["images/blank.png"].texture);
         let button4 = new PIXI.Sprite(PIXI.loader.resources["images/blank.png"].texture);
 
-        let bomb = new PIXI.Sprite(PIXI.loader.resources["images/bomb_.svg"].texture);
+        let bomb = new PIXI.Sprite(PIXI.loader.resources["images/bombv2.svg"].texture);
         this.app.stage.addChild(bomb);
 
+		let clock_bg = new PIXI.Sprite(PIXI.loader.resources["images/clock.svg"].texture);
+		this.app.stage.addChild(clock_bg);
+		
         let cable_closed_1 = new PIXI.Sprite(PIXI.loader.resources["images/cables/closed/1.svg"].texture);
         let cable_closed_2 = new PIXI.Sprite(PIXI.loader.resources["images/cables/closed/2.svg"].texture);
         let cable_closed_3 = new PIXI.Sprite(PIXI.loader.resources["images/cables/closed/3.svg"].texture);
@@ -179,8 +183,8 @@ export class Renderer {
 
                 if (x == 1) {        
 					this.showText(textWin, 50);
-			       // blurFilter1.enabled = true;
-			         EndWin(blurFilter1);
+			        blurFilter1.enabled = true;
+			         //EndWin(blurFilter1);
 				  //  tutaj zamiast blurFiler1.enabled chciałem wywoływać : EndWin(blurFilter1) 
       				this.app.ticker.add(function () {
                     timer.rotation -= timerRotationSpeed;
