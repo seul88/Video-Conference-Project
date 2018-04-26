@@ -11,6 +11,7 @@ export class BombGame extends GameState {
 
     init(sapper, trainer)
     {
+        // It will be sent to users
         this.state = {
             sapper: sapper,
             trainer: trainer,
@@ -22,28 +23,42 @@ export class BombGame extends GameState {
         this.cables_order = [1, 2, 3, 4]; 
     }
 
-    rpc_cutTheCable(player, number) {
-        if (this.state.finished || this.cables_order == [])
+    checkWinState()
+    {
+        for(let i = 0; i < this.state.cut_cables.length; ++i)
+        {
+            if(this.state.cut_cables[i] != this.cables_order[i])
+            {
+                this.state.finished = true;
+                break;
+            }
+        }
+
+        if(!this.state.finished && this.state.cut_cables.length == this.cables_order.length)
+        {
+            this.state.finished = true;
+            this.state.defused = true;
+        }
+    }
+
+    rpc_cutTheCable(player, args) {
+        if (this.state.finished)
             return;
 
         if (player != this.state.sapper)
             return;
 
-        let next = this.cables_order.shift();
+        if(args.number in this.state.cut_cables || args.number > 4 || args.number < 0)
+            return;
 
-        if (next != number) {
-            this.state.finished = true;
-        }
-        else {
-            this.state.cut_cables.push(next);
+        this.state.cut_cables.push(args.number);
 
-            if (this.cables_order.length == 0) {
-                this.state.finished = true;
-                this.state.defused = true;
-            }
-        }
+        if(typeof this.cables_order != 'undefined')
+            this.checkWinState();
 
         this.emitOnChange();
     }
+
+
 
 }

@@ -7,6 +7,7 @@ export class GameServer extends NetworkGame {
         this.state.rpc_replication = null;
         this.state.onChange = this.onGameChange.bind(this);
         this.players = players;
+        this.accept_old = true;
     }
 
     start() {

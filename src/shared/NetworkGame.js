@@ -2,20 +2,30 @@
 export class NetworkGame {
     constructor(state) {
         this.state = state;
+        this.timestamp = Date.now();
+        this.accept_old = false;
     }
 
-    start() {}
+    start() { }
 
-    finish() {}
+    finish() { }
 
     subscribePlayer(id, socket) {
         socket.on('game', (message) => {
-            this.handleRPC(id, message.procedure, message.args);
+            let isNew = message.timestamp >= this.timestamp;
+
+            if (isNew || this.accept_old)
+            {
+                this.handleRPC(id, message.procedure, message.args);
+
+                if(isNew)
+                    this.timestamp = message.timestamp;
+            }
         });
     }
 
     unsubscribePlayer(socket) {
-        socket.on('game', () => {});
+        socket.on('game', () => { });
     }
 
     handleRPC(id, procedure, args) {
@@ -26,6 +36,11 @@ export class NetworkGame {
         socket.emit('game', {
             procedure: procedure,
             args: args,
+            timestamp: this.timestamp
         });
+    }
+
+    stamp() {
+        this.timestamp = Date.now();
     }
 }
