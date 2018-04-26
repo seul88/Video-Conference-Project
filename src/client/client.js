@@ -20,7 +20,7 @@ class Client {
 
         this.createIO();
         this.rendered = new Renderer();
-        
+
         this.game = null;
         this.gameClient = null;
     }
@@ -55,7 +55,7 @@ class Client {
                         caller: 'id'
                     }
                     */
-                   this.createRTC();
+                    this.createRTC();
 
                     // Who start?
                     if (message.caller == this.id) {
