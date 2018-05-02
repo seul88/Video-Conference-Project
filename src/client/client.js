@@ -125,12 +125,16 @@ class Client {
                     }
                     */
 
+                    const mediaConstraints = { audio: true, video: { facingMode: "user" } };
+                    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
+
                     this.RTCConnection.setRemoteDescription(message.data).then(() => {
-                        //return navigator.mediaDevices.getUserMedia(mediaConstraints);
+                        return navigator.mediaDevices.getUserMedia(mediaConstraints);
                     })
                         .then((stream) => {
-                            //document.getElementById("local_video").srcObject = stream;
-                            //return myPeerConnection.addStream(stream);
+                            document.getElementById("localVideo").srcObject = stream;
+
+                            stream.getTracks().forEach(track => this.RTCConnection.addTrack(track, stream));
                         })
                         .then(() => {
                             return this.RTCConnection.createAnswer();
@@ -196,6 +200,7 @@ class Client {
         this.RTCConnection = RTCPeerConnection(configuration);
 
         // text channel for test
+        /*
         let channel = this.RTCConnection.createDataChannel("chat", { negotiated: true, id: 0 });
         channel.onopen = (event) => {
             channel.send('Hi you! Message from ' + this.id);
@@ -203,10 +208,16 @@ class Client {
         channel.onmessage = (event) => {
             console.log(event.data);
         }
+        */
 
-        //todo AddStream to connection
+        this.RTCConnection.ontrack = this.handleRemoteVideo.bind(this);
 
         this.RTCConnection.onicecandidate = this.iceCandidateHandler.bind(this);
+    }
+
+    handleRemoteVideo(event) {
+        document.getElementById("remoteVideo").srcObject = event.streams[0];
+        console.log(event);
     }
 
     closeRTC() {
