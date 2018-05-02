@@ -204,9 +204,43 @@ class Client {
             console.log(event.data);
         }
 
-        //todo AddStream to connection
 
-        this.RTCConnection.onicecandidate = this.iceCandidateHandler.bind(this);
+
+        //todo AddStream to connection
+        //************************************       */
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then( myStream => { 
+            let stream = myStream;
+            
+            let localVideo = document.getElementById("localVideo");
+            let remoteVideo = document.getElementById("remoteVideo");
+               
+            //displaying local video stream on the page 
+            localVideo.src = window.URL.createObjectURL(stream);
+                                            
+            // setup stream listening 
+            this.RTCConnection.addStream(stream);
+            console.log("Local stream added"); 
+               
+            //when a remote user adds stream to the peer connection, we display it 
+            this.RTCConnection.onaddstream = e => {
+                console.log(" Remote Stream added");
+                remoteVideo.src = window.URL.createObjectURL(e.stream); 
+            };
+
+            this.RTCConnection.onicecandidate = this.iceCandidateHandler.bind(this);
+
+               
+         }, function (error) { 
+            console.log(error); 
+         });
+
+
+
+
+
+
+
+        //***************************************** */
     }
 
     closeRTC() {

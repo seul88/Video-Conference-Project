@@ -7,7 +7,32 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"	crossorigin="anonymous">
 	<link rel="stylesheet" type="text/css" href="mystyle.css">
 </head>
-
+<style>
+	
+	body { 
+	   background: #eee; 
+	   padding: 5% 0; 
+	} 
+	  
+	video { 
+	   background: black; 
+	   border: 1px solid gray; 
+	}	  
+	  
+	#localVideo { 
+	   width: 150px; 
+	   height: 150px; 
+	   position: absolute; 
+	   top: 15px; 
+	   right: 15px; 
+	}
+	  
+	#remoteVideo { 
+	   width: 500px; 
+	   height: 500px; 
+	}
+	  
+ </style>
 <body>
 	<div id="container">
 		<h1 id="hello">Video Conference Project</h1>
@@ -20,6 +45,8 @@
 		<div id="camdiv">
 		    <div id="camdivleft">
 			   camera
+				<video id = "localVideo" autoplay></video> 
+      			<video id = "remoteVideo" autoplay></video>
 			</div>
 			<div id="camdivright">
 			   chat
