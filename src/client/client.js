@@ -6,7 +6,6 @@ var button = document.getElementById("sendMessageButton");
 var joinButton = document.getElementById("btn1");
 
 
-
 /*
 https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling#Handling_the_invitation
 */
@@ -29,6 +28,12 @@ class Client {
 
         this.game = null;
         this.gameClient = null;
+
+        this.remoteVideo = document.getElementById("remoteVideo");
+        this.localVideo = document.getElementById("localVideo");
+
+        this.mediaConstraints = { audio: true, video: { facingMode: "user" } };
+        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
     }
 
     parseMessageIO(message) {
@@ -67,8 +72,13 @@ class Client {
                     if (message.caller == this.id) {
                         console.log("I am caller!");
 
+                        let offerOptions = {
+                            offerToReceiveAudio: 1,
+                            offerToReceiveVideo: 1
+                        };
+
                         // Create offer message
-                        this.RTCConnection.createOffer().then((offer) => {
+                        this.RTCConnection.createOffer(offerOptions).then((offer) => {
                             return this.RTCConnection.setLocalDescription(offer);
                         })
                             .then(() => {
@@ -82,12 +92,14 @@ class Client {
                             });
                     }
 
+                    /*
                     this.game = new BombGame();
                     this.game.onChange = (state) => {
                         console.log(state);
                     };
                     this.gameClient = new GameClient(this.game, this.socket, this.id);
                     this.gameClient.start();
+                    */
 
                     break;
                 }
@@ -125,17 +137,15 @@ class Client {
                     }
                     */
 
-                    const mediaConstraints = { audio: true, video: { facingMode: "user" } };
-                    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
-
                     this.RTCConnection.setRemoteDescription(message.data).then(() => {
-                        return navigator.mediaDevices.getUserMedia(mediaConstraints);
+                        // return navigator.mediaDevices.getUserMedia(this.mediaConstraints);
                     })
+                        /*
                         .then((stream) => {
                             document.getElementById("localVideo").srcObject = stream;
-
                             stream.getTracks().forEach(track => this.RTCConnection.addTrack(track, stream));
                         })
+                        */
                         .then(() => {
                             return this.RTCConnection.createAnswer();
                         })
@@ -194,7 +204,19 @@ class Client {
 
     createRTC() {
         let configuration = {
-            "iceServers": [{ "urls": "stun:stun.l.google.com:19302" }]
+            "iceServers": [
+                { "urls": "stun:stun.l.google.com:19302" },
+                {
+                    'urls': 'turn:192.158.29.39:3478?transport=udp',
+                    'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+                    'username': '28224511:1379330808'
+                },
+                {
+                    'urls': 'turn:192.158.29.39:3478?transport=tcp',
+                    'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+                    'username': '28224511:1379330808'
+                }
+            ]
         };
 
         this.RTCConnection = RTCPeerConnection(configuration);
@@ -209,15 +231,48 @@ class Client {
             console.log(event.data);
         }
         */
+        let hasAddTrack = (this.RTCConnection.addTrack !== undefined);
 
-        this.RTCConnection.ontrack = this.handleRemoteVideo.bind(this);
+        if (hasAddTrack) {
+            this.RTCConnection.ontrack = this.handleTrackEvent.bind(this);
+        } else {
+            this.RTCConnection.onaddstream = this.handleAddStreamEvent.bind(this);
+        }
 
         this.RTCConnection.onicecandidate = this.iceCandidateHandler.bind(this);
+
+        navigator.mediaDevices.getUserMedia(this.mediaConstraints)
+            .then(stream => {
+                this.localVideo.srcObject = stream;
+
+                if (hasAddTrack) {
+                    log("-- Adding tracks to the RTCPeerConnection");
+                    stream.getTracks().forEach(track => this.RTCConnection.addTrack(track, stream));
+                } else {
+                    log("-- Adding stream to the RTCPeerConnection");
+                    this.RTCConnection.addStream(stream);
+                }
+            })
+            .catch(err => {
+
+            });
+
+        // Set up event handlers for the ICE negotiation process.
+        this.RTCConnection.onnremovestream = console.log;
+        this.RTCConnection.oniceconnectionstatechange = console.log;
+        this.RTCConnection.onicegatheringstatechange = console.log;
+        this.RTCConnection.onsignalingstatechange = console.log;
+        //myPeerConnection.onnegotiationneeded = handleNegotiationNeededEvent;
     }
 
-    handleRemoteVideo(event) {
-        document.getElementById("remoteVideo").srcObject = event.streams[0];
+    handleTrackEvent(event) {
         console.log(event);
+        this.remoteVideo.srcObject = event.streams[0];
+    }
+
+    handleAddStreamEvent(event) {
+        console.log(event);
+        this.remoteVideo.srcObject = event.stream;
     }
 
     closeRTC() {
@@ -257,11 +312,11 @@ class Client {
 
 }
 
-function  prepareInterface (username) {
+function prepareInterface(username) {
     var text = "Hello  " + username
-	document.getElementById("hello").innerHTML = text;
-	document.getElementById("formdiv").style.display="none";
-	document.getElementById("camdiv").style.display="block";
+    document.getElementById("hello").innerHTML = text;
+    document.getElementById("formdiv").style.display = "none";
+    document.getElementById("camdiv").style.display = "block";
     console.log(text);
 }
 
@@ -270,7 +325,7 @@ joinButton.onclick = (event) => {
     let username = document.getElementById("form1").elements[0].value
 
     prepareInterface(username);
-    
+
 
     let client = new Client(username);
 };
