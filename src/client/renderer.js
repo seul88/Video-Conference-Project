@@ -5,11 +5,11 @@ import * as PIXI from 'pixi.js'
     zintegorwac tego z klasa klient. Juz Ci pisze co i jak:
     1. Na te chwile usunalem ten filtr blura, ale zostal na githubie wiec
     w przyslosci mozesz go latwo przywrocic - zrobilem to dlatego, ze zmienila sie
-    troche logika tej klasy, ale o tym nizej
-    2. SVG z kabelkami nie mozesz robic o rozmiarze calej bomby, tylko musisz 
-    je zrobic w rozmiarze obszaru do klikniecia i ustawic ich pozycje za pomoca x/y
-    3. Wiem ze wtedy bedzie troche inaczej odnosnie skalowania, ale na te chwile mamy sztywno okienko
-    1200x900 wiec nie ma problemu
+    troche logika tej klasy, ale o tym nizej		
+		2. SVG z kabelkami nie mozesz robic o rozmiarze calej bomby, tylko musisz 
+		je zrobic w rozmiarze obszaru do klikniecia i ustawic ich pozycje za pomoca x/y  >>[DONE]
+		3. Wiem ze wtedy bedzie troche inaczej odnosnie skalowania, ale na te chwile mamy sztywno okienko
+		1200x900 wiec nie ma problemu >>[DONE]
     4. Tutaj nie implementujesz logiki gry samej w sobie, tylko odwzorowujesz wizualnie
     stan zapisany w obiekcie state
 
@@ -93,17 +93,26 @@ export class Renderer {
         */
     }
 
-    addCable(number, imageOpened, imageClosed, x, y) {
+    addCable(number, imageClosed, imageOpened, x, y) {
         let closedSprite = new PIXI.Sprite(PIXI.loader.resources[imageClosed].texture);
         let openedSprite = new PIXI.Sprite(PIXI.loader.resources[imageOpened].texture);
-
-        this.closedSprite.interactive = true;
-        this.closedSprite.on('pointerdown', () => {
+		
+		closedSprite.x = x
+		closedSprite.y = y
+		openedSprite.x = x
+		openedSprite.y = y
+		closedSprite.scale.x = 0.75
+		closedSprite.scale.y = 0.75
+		openedSprite.scale.x = 0.75
+		openedSprite.scale.y = 0.75
+		
+        closedSprite.interactive = true;
+        closedSprite.on('pointerdown', () => {
             this.onCutCable(number);
         });
 
         this.app.stage.addChild(closedSprite);
-        //this.app.stage.addChild(openedSprite);
+       // this.app.stage.addChild(openedSprite);
 
         this.cables[number] = {
             closed: closedSprite,
@@ -113,23 +122,21 @@ export class Renderer {
 
     setup() {
 
-        // Click listener
-        this.app.view.addEventListener("click", this.onClickCanvas.bind(this));
-
+       
         /* ------------------------------------ IMAGES - add to canvas ------------------------------------ */
 
 
         this.bomb = new PIXI.Sprite(PIXI.loader.resources["images/bombv2.svg"].texture);
-        this.app.stage.addChild(bomb);
+        this.app.stage.addChild(this.bomb);
 
         this.clock_bg = new PIXI.Sprite(PIXI.loader.resources["images/clock.svg"].texture);
-        this.app.stage.addChild(clock_bg);
+        this.app.stage.addChild(this.clock_bg);
 
         this.cables = [];
-        this.addCable(1, "images/cables/closed/1.svg", "images/cables/opened/1.svg", 0, 0);
-        this.addCable(2, "images/cables/closed/2.svg", "images/cables/opened/2.svg", 0, 0);
-        this.addCable(3, "images/cables/closed/3.svg", "images/cables/opened/3.svg", 0, 0);
-        this.addCable(4, "images/cables/closed/4.svg", "images/cables/opened/4.svg", 0, 0);
+        this.addCable(1, "images/cables/closed/1.svg", "images/cables/opened/1.svg", 200, 100);
+        this.addCable(2, "images/cables/closed/2.svg", "images/cables/opened/2.svg", 400, 100);
+        this.addCable(3, "images/cables/closed/3.svg", "images/cables/opened/3.svg", 600, 100);
+        this.addCable(4, "images/cables/closed/4.svg", "images/cables/opened/4.svg", 800, 100);
 
         /* ------------------------------------ TIMER ------------------------------------ */
 
@@ -154,6 +161,11 @@ export class Renderer {
             timer.rotation += timerRotationSpeed;
             clockwheel.rotation += timerRotationSpeed;
         });
+		
+		
+		 // Click listener
+        this.app.view.addEventListener("click", this.onClickCanvas.bind(this));
+
 
     }
 }
