@@ -24,6 +24,7 @@
     "babel-preset-env": "^1.6.1",
     "copy-webpack-plugin": "^4.5.1",
     "express": "^4.16.3",
+    "pixi-particles": "^3.0.0",
     "pixi.js": "^4.7.3",
     "socket.io": "^2.0.4",
     "webpack": "^3.11.0",
