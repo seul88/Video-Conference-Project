@@ -317,6 +317,7 @@ function prepareInterface(username) {
     document.getElementById("hello").innerHTML = text;
     document.getElementById("formdiv").style.display = "none";
     document.getElementById("camdiv").style.display = "block";
+	document.getElementById("gamediv").style.display="block";
     console.log(text);
 }
 

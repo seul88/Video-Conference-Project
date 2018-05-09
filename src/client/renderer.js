@@ -30,7 +30,7 @@ export class Renderer {
             backgroundColor: 0x57829c
         });
 
-        document.body.appendChild(this.app.view);
+        document.getElementById("gamediv").appendChild(this.app.view);
 
         /* ------------------------------------ IMAGES - load from directory ------------------------------------ */
         PIXI.loader
