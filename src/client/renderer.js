@@ -50,7 +50,8 @@ export class Renderer {
                 "images/cables/closed/cable_closed.svg",
                 "images/cables/opened/cable_open.svg",
                 "images/timer.svg",
-                "images/circle.svg"
+                "images/circle.svg",
+				"images/explosion.json"
             ])
             .load(this.setup.bind(this));
     }
@@ -78,7 +79,7 @@ export class Renderer {
 
         this.app.stage.removeChild(this.cables[number].closed);
         this.app.stage.addChild(this.cables[number].opened);
-		
+		this.explosion();
 		
     }
 
@@ -124,6 +125,47 @@ export class Renderer {
         }
     }
 
+	explosion(){
+        let flame = new PIXI.Container();
+        flame.x = 550;
+		flame.y = 450;
+		flame.scale.x = 2.2;
+		flame.scale.y = 2.2;
+		this.app.stage.addChild(flame);
+		let json = PIXI.loader.resources["images/explosion.json"];
+		console.log(json.data);
+			var emitter = new PIXI.particles.Emitter(	
+				flame,
+				[PIXI.Texture.fromImage('images/smokeparticle.png')],
+				json.data
+				);
+
+			// Calculate the current time
+			var elapsed = Date.now();
+					
+			// Update function every frame
+			var update = function(){
+						
+				// Update the next frame
+				requestAnimationFrame(update);
+
+				var now = Date.now();
+				
+				// The emitter requires the elapsed
+				// number of seconds since the last update
+				emitter.update((now - elapsed) * 0.001);
+				elapsed = now;
+				
+				// Should re-render the PIXI Stage
+				// renderer.render(stage);
+			};
+
+
+			emitter.emit = true;
+
+			update();		
+	}
+	
     setup() {
 
        
@@ -168,124 +210,7 @@ export class Renderer {
 		
 		
 		
-		let flame = new PIXI.Container();
-        flame.x = 550;
-		flame.y = 450;
-		flame.scale.x = 2.2;
-		flame.scale.y = 2.2;
-		this.app.stage.addChild(flame);
-		
-		// Create a new emitter
-			var emitter = new PIXI.particles.Emitter(
 
-				// The PIXI.Container to put the emitter in
-				// if using blend modes, it's important to put this
-				// on top of a bitmap, and not use the root stage Container
-				flame,
-			  
-				// The collection of particle images to use
-				[PIXI.Texture.fromImage('images/smokeparticle.png')],
-			  
-				// Emitter configuration, edit this to change the look
-				// of the emitter
-				{							
-			"alpha": {
-				"start": 0.81,
-				"end": 0
-			},
-			"scale": {
-				"start": 5,
-				"end": 1.2,
-				"minimumScaleMultiplier": 1
-	},
-					"color": {
-						"start": "#b58317",
-						"end": "#910717"
-					},
-					"speed": {
-						"start": 1200,
-						"end": 0,
-						"minimumSpeedMultiplier": 1
-					},
-					"acceleration": {
-						"x": 0,
-						"y": 0
-					},
-					"maxSpeed": 0,
-					"startRotation": {
-						"min": 0,
-						"max": 360
-					},
-					"noRotation": false,
-					"rotationSpeed": {
-						"min": 0,
-						"max": 200
-					},
-					"lifetime": {
-						"min": 0.5,
-						"max": 1
-					},
-					"blendMode": "normal",
-					"ease": [
-						{
-							"s": 0,
-							"cp": 0.329,
-							"e": 0.548
-						},
-						{
-							"s": 0.548,
-							"cp": 0.767,
-							"e": 0.876
-						},
-						{
-							"s": 0.876,
-							"cp": 0.985,
-							"e": 1
-						}
-					],
-					"frequency": 0.001,
-					"emitterLifetime": -10,
-					"maxParticles": 500,
-					"pos": {
-						"x": 0,
-						"y": 0
-					},
-					"addAtBack": true,
-					"spawnType": "circle",
-					"spawnCircle": {
-						"x": 0,
-						"y": 0,
-						"r": 0
-					}
-				}				
-				);
-
-			// Calculate the current time
-			var elapsed = Date.now();
-					
-			// Update function every frame
-			var update = function(){
-						
-				// Update the next frame
-				requestAnimationFrame(update);
-
-				var now = Date.now();
-				
-				// The emitter requires the elapsed
-				// number of seconds since the last update
-				emitter.update((now - elapsed) * 0.001);
-				elapsed = now;
-				
-				// Should re-render the PIXI Stage
-				// renderer.render(stage);
-			};
-
-
-			// Start emitting
-			emitter.emit = true;
-
-			// Start the update
-			update();
 					
 		 // Click listener
         this.app.view.addEventListener("click", this.onClickCanvas.bind(this));
