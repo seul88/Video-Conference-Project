@@ -13,47 +13,57 @@
 <body>
 	<div id="container">
 		<h1 id="hello">Video Conference Project</h1>
-
-		<video id="localVideo" autoplay></video>
-		<video id="remoteVideo" autoplay></video>
-
 		<div id="formdiv">
 			<form id="form1">
 				<input type="text" placeholder="Name" onfocus="this.placeholder=''" onblur="this.placeholder='login'">
 			</form>
 			<button onclick="myFunction()" id="btn1">Join!</button>
 		</div>
+		<div id="gamediv"></div>
 		<div id="camdiv">
-			<div id="camdivleft">
-				camera
+			<div id="camlocaldiv">
+				local camera
+				<video id="localVideo" width="440" height="240" autoplay ></video>
 			</div>
-			<div id="camdivright">
-				chat
+			<div id="camremotediv">
+				remote camera
+				<video id="remoteVideo" width="440" height="240" autoplay></video>
 			</div>
-			<div style="clear: both" />
+			<div id="camchatdiv">
+				<div class="chatcontainer">
+				  <p>Hello. How are you today?</p>
+				  <span class="time-right">11:00</span>
+				</div>
+
+				<div class="chatcontainer darker">
+				  <p>Hey! I'm fine. Thanks for asking!</p>
+				  <span class="time-left">11:01</span>
+				</div>
+			</div>
 			<div id="camdivbottom">
 				<div id="camdivbottomtext">
-					text
+					<textarea class="form-control" rows="3" id="chattext"></textarea>
 				</div>
 				<div id="camdivbottombtn">
-					button
+					<button type="button" class="btn btn-success" id="chatbtn">Send</button>
 				</div>
-				<div style="clear: both" />
 			</div>
 		</div>
 	</div>
 
 	<!-- moved to client.js -->
-	<!-- <script>
+<script>
 function myFunction() {
     var x = document.getElementById("form1");
     var text = "Hello  " + x.elements[0].value
 	document.getElementById("hello").innerHTML = text;
 	document.getElementById("formdiv").style.display="none";
+	document.getElementById("gamediv").style.display="block";
 	document.getElementById("camdiv").style.display="block";
 	console.log(text);
 }
-</script> -->
+
+</script>
 	<script src="client.js"></script>
 	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
 	 crossorigin="anonymous"></script>

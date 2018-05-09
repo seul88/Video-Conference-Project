@@ -320,12 +320,33 @@ function prepareInterface(username) {
     console.log(text);
 }
 
+
+function runcam(){
+	
+	var video = document.querySelector("#localVideo");
+ 
+	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
+	 
+		if (navigator.getUserMedia) {       
+			navigator.getUserMedia({video: true}, handleVideo, videoError);
+		}
+}
+
+function handleVideo(stream) {
+    video.src = window.URL.createObjectURL(stream);
+}
+ 
+function videoError(e) {
+    // do something
+}
+
+
 //connection starts on button click
 joinButton.onclick = (event) => {
     let username = document.getElementById("form1").elements[0].value
 
     prepareInterface(username);
-
+	runcam();
 
     let client = new Client(username);
 };
