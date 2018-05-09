@@ -168,10 +168,12 @@ export class Renderer {
 		
 		
 		
-		let container = new PIXI.Container();
-        container.x = 550;
-		container.y = 450;
-		this.app.stage.addChild(container);
+		let flame = new PIXI.Container();
+        flame.x = 550;
+		flame.y = 450;
+		flame.scale.x = 2.2;
+		flame.scale.y = 2.2;
+		this.app.stage.addChild(flame);
 		
 		// Create a new emitter
 			var emitter = new PIXI.particles.Emitter(
@@ -179,24 +181,23 @@ export class Renderer {
 				// The PIXI.Container to put the emitter in
 				// if using blend modes, it's important to put this
 				// on top of a bitmap, and not use the root stage Container
-				container,
+				flame,
 			  
 				// The collection of particle images to use
-				[PIXI.Texture.fromImage('images/particle.png')],
+				[PIXI.Texture.fromImage('images/smokeparticle.png')],
 			  
 				// Emitter configuration, edit this to change the look
 				// of the emitter
-								
-				{
-					"alpha": {
-						"start": 0.81,
-						"end": 0
-					},
-					"scale": {
-						"start": 5,
-						"end": 1.2,
-						"minimumScaleMultiplier": 1
-					},
+				{							
+			"alpha": {
+				"start": 0.81,
+				"end": 0
+			},
+			"scale": {
+				"start": 5,
+				"end": 1.2,
+				"minimumScaleMultiplier": 1
+	},
 					"color": {
 						"start": "#b58317",
 						"end": "#910717"
