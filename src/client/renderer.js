@@ -168,13 +168,18 @@ export class Renderer {
 		
 		
 		
+		let container = new PIXI.Container();
+        container.x = 550;
+		container.y = 450;
+		this.app.stage.addChild(container);
+		
 		// Create a new emitter
 			var emitter = new PIXI.particles.Emitter(
 
 				// The PIXI.Container to put the emitter in
 				// if using blend modes, it's important to put this
 				// on top of a bitmap, and not use the root stage Container
-				this.app.stage,
+				container,
 			  
 				// The collection of particle images to use
 				[PIXI.Texture.fromImage('images/particle.png')],
@@ -182,7 +187,7 @@ export class Renderer {
 				// Emitter configuration, edit this to change the look
 				// of the emitter
 								
-								{
+				{
 					"alpha": {
 						"start": 0.81,
 						"end": 0
@@ -252,8 +257,6 @@ export class Renderer {
 						"r": 0
 					}
 				}				
-								
-							
 				);
 
 			// Calculate the current time
@@ -276,7 +279,6 @@ export class Renderer {
 				// renderer.render(stage);
 			};
 
-			emitter.updateOwnerPos(600, 450);
 
 			// Start emitting
 			emitter.emit = true;
