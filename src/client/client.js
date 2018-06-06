@@ -274,6 +274,49 @@ class Client {
 
 }
 
+<<<<<<< HEAD
 window.onload = () => {
     let client = new Client();
 }; 
+=======
+function prepareInterface(username) {
+    var text = "Hello  " + username
+    document.getElementById("hello").innerHTML = text;
+    document.getElementById("formdiv").style.display = "none";
+    document.getElementById("camdiv").style.display = "block";
+	document.getElementById("gamediv").style.display="block";
+    console.log(text);
+}
+
+
+function runcam(){
+	
+	var video = document.querySelector("#localVideo");
+ 
+	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
+	 
+		if (navigator.getUserMedia) {       
+			navigator.getUserMedia({video: true}, handleVideo, videoError);
+		}
+}
+
+function handleVideo(stream) {
+    video.src = window.URL.createObjectURL(stream);
+}
+ 
+function videoError(e) {
+    // do something
+}
+
+
+//connection starts on button click
+joinButton.onclick = (event) => {
+    let username = document.getElementById("form1").elements[0].value
+
+    prepareInterface(username);
+	runcam();
+
+    let client = new Client(username);
+};
+
+>>>>>>> d4348bf30c71b84d9391212c68dfb3ae7e73c359
