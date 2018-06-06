@@ -13,42 +13,8 @@
 <body>
 	<div id="container">
 		<h1 id="hello">Video Conference Project</h1>
-		<div id="formdiv">
-			<form id="form1">
-				<input type="text" placeholder="Name" onfocus="this.placeholder=''" onblur="this.placeholder='login'">
-			</form>
-			<button onclick="myFunction()" id="btn1">Join!</button>
-		</div>
-		<div id="gamediv"></div>
-		<div id="camdiv">
-			<div id="camlocaldiv">
-				local camera
-				<video id="localVideo" width="440" height="240" autoplay ></video>
-			</div>
-			<div id="camremotediv">
-				remote camera
-				<video id="remoteVideo" width="440" height="240" autoplay></video>
-			</div>
-			<div id="camchatdiv">
-				<div class="chatcontainer">
-				  <p>Hello. How are you today?</p>
-				  <span class="time-right">11:00</span>
-				</div>
-
-				<div class="chatcontainer darker">
-				  <p>Hey! I'm fine. Thanks for asking!</p>
-				  <span class="time-left">11:01</span>
-				</div>
-			</div>
-			<div id="camdivbottom">
-				<div id="camdivbottomtext">
-					<textarea class="form-control" rows="3" id="chattext"></textarea>
-				</div>
-				<div id="camdivbottombtn">
-					<button type="button" class="btn btn-success" id="chatbtn">Send</button>
-				</div>
-			</div>
-		</div>
+		<video id="localVideo" width="440" height="240" autoplay muted></video>
+		<video id="remoteVideo" width="440" height="240" autoplay></video>
 	</div>
 
 </script>

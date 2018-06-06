@@ -23,16 +23,19 @@ class Client {
         this.username = username;
         this.id = null;
 
-        this.createIO();
-        this.rendered = new Renderer();
+        //this.rendered = new Renderer();
 
         this.game = null;
         this.gameClient = null;
 
+        /////////////////////////
+        this.localStream = null;
+
         this.remoteVideo = document.getElementById("remoteVideo");
         this.localVideo = document.getElementById("localVideo");
 
-        this.mediaConstraints = { audio: true, video: { facingMode: "user" } };
+        this.createIO();
+
         navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
     }
 
@@ -62,35 +65,10 @@ class Client {
                 {
                     /*
                     {
-                        cmd: "new_game",
-                        caller: 'id'
+                        cmd: "new_game"
                     }
                     */
                     this.createRTC();
-
-                    // Who start?
-                    if (message.caller == this.id) {
-                        console.log("I am caller!");
-
-                        let offerOptions = {
-                            offerToReceiveAudio: 1,
-                            offerToReceiveVideo: 1
-                        };
-
-                        // Create offer message
-                        this.RTCConnection.createOffer(offerOptions).then((offer) => {
-                            return this.RTCConnection.setLocalDescription(offer);
-                        })
-                            .then(() => {
-                                this.socket.emit('send', {
-                                    cmd: "offer",
-                                    data: this.RTCConnection.localDescription
-                                });
-                            })
-                            .catch((reason) => {
-                                console.log(reason);
-                            });
-                    }
 
                     /*
                     this.game = new BombGame();
@@ -103,6 +81,34 @@ class Client {
 
                     break;
                 }
+            case "connect":
+                {
+                    /*
+                    {
+                        cmd: "connect",
+                    }
+                    */
+
+                    // Create offer message
+                    this.RTCConnection.createOffer({
+                        offerToReceiveAudio: 1,
+                        offerToReceiveVideo: 1
+                    })
+                        .then((offer) => {
+                            this.RTCConnection.setLocalDescription(offer);
+
+                            this.socket.emit('send', {
+                                cmd: "offer",
+                                data: this.RTCConnection.localDescription
+                            });
+                        })
+                        .catch((reason) => {
+                            console.log(reason);
+                        });
+
+                    break;
+                }
+
             case "finish_game":
                 {
                     /*
@@ -137,23 +143,13 @@ class Client {
                     }
                     */
 
-                    this.RTCConnection.setRemoteDescription(message.data).then(() => {
-                        // return navigator.mediaDevices.getUserMedia(this.mediaConstraints);
-                    })
-                        /*
-                        .then((stream) => {
-                            document.getElementById("localVideo").srcObject = stream;
-                            stream.getTracks().forEach(track => this.RTCConnection.addTrack(track, stream));
-                        })
-                        */
+                    this.RTCConnection.setRemoteDescription(message.data)
                         .then(() => {
                             return this.RTCConnection.createAnswer();
                         })
                         .then((answer) => {
                             this.RTCConnection.setLocalDescription(answer);
-                            return answer;
-                        })
-                        .then((answer) => {
+
                             // Send the answer to the remote peer using the signaling server
                             this.socket.emit('send', {
                                 cmd: "answer",
@@ -176,9 +172,13 @@ class Client {
                     }
                     */
 
-                    this.RTCConnection.setRemoteDescription(message.data).then(() => {
-                        console.log("Answer applied to RemoteDescription")
-                    });
+                    this.RTCConnection.setRemoteDescription(message.data)
+                        .then(() => {
+                            console.log("Answer applied to RemoteDescription")
+                        })
+                        .catch((error) => {
+                            console.log(error);
+                        });
 
                     break;
                 }
@@ -203,99 +203,61 @@ class Client {
     }
 
     createRTC() {
-        let configuration = {
-            "iceServers": [
-                { "urls": "stun:stun.l.google.com:19302" },
-                {
-                    'urls': 'turn:192.158.29.39:3478?transport=udp',
-                    'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-                    'username': '28224511:1379330808'
-                },
-                {
-                    'urls': 'turn:192.158.29.39:3478?transport=tcp',
-                    'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-                    'username': '28224511:1379330808'
-                }
-            ]
-        };
-
-        this.RTCConnection = RTCPeerConnection(configuration);
-
-        // text channel for test
-        /*
-        let channel = this.RTCConnection.createDataChannel("chat", { negotiated: true, id: 0 });
-        channel.onopen = (event) => {
-            channel.send('Hi you! Message from ' + this.id);
-        }
-        channel.onmessage = (event) => {
-            console.log(event.data);
-        }
-        */
-        let hasAddTrack = (this.RTCConnection.addTrack !== undefined);
-
-        if (hasAddTrack) {
-            this.RTCConnection.ontrack = this.handleTrackEvent.bind(this);
-        } else {
-            this.RTCConnection.onaddstream = this.handleAddStreamEvent.bind(this);
-        }
-
-        this.RTCConnection.onicecandidate = this.iceCandidateHandler.bind(this);
-
-        navigator.mediaDevices.getUserMedia(this.mediaConstraints)
+        // Camera
+        navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: true
+        })
             .then(stream => {
                 this.localVideo.srcObject = stream;
+                this.localStream = stream;
 
-                if (hasAddTrack) {
-                    log("-- Adding tracks to the RTCPeerConnection");
-                    stream.getTracks().forEach(track => this.RTCConnection.addTrack(track, stream));
-                } else {
-                    log("-- Adding stream to the RTCPeerConnection");
-                    this.RTCConnection.addStream(stream);
-                }
+                let videoTracks = this.localStream.getVideoTracks();
+                let audioTracks = this.localStream.getAudioTracks();
+
+                this.RTCConnection = RTCPeerConnection(null);
+                this.RTCConnection.onicecandidate = this.iceCandidateHandler.bind(this);
+                this.RTCConnection.ontrack = this.gotRemoteStream.bind(this);
+
+                this.localStream.getTracks().forEach(track => {
+                    this.RTCConnection.addTrack(track, this.localStream);
+                });
+
+                this.socket.emit('send', {
+                    cmd: "ready"
+                });
+
             })
-            .catch(err => {
-
+            .catch((e) => {
+                alert('getUserMedia() error: ' + e.name);
             });
-
-        // Set up event handlers for the ICE negotiation process.
-        this.RTCConnection.onnremovestream = console.log;
-        this.RTCConnection.oniceconnectionstatechange = console.log;
-        this.RTCConnection.onicegatheringstatechange = console.log;
-        this.RTCConnection.onsignalingstatechange = console.log;
-        //myPeerConnection.onnegotiationneeded = handleNegotiationNeededEvent;
     }
 
-    handleTrackEvent(event) {
-        console.log(event);
-        this.remoteVideo.srcObject = event.streams[0];
+    gotRemoteStream(e) {
+        if (this.remoteVideo.srcObject !== e.streams[0]) {
+            this.remoteVideo.srcObject = e.streams[0];
+        }
     }
 
-    handleAddStreamEvent(event) {
-        console.log(event);
-        this.remoteVideo.srcObject = event.stream;
-    }
 
     closeRTC() {
-        if (this.RTCConnection) {
 
-            /*
-            var remoteVideo = document.getElementById("received_video");
-            var localVideo = document.getElementById("local_video");
-      
-            if (remoteVideo.srcObject) {
-                remoteVideo.srcObject.getTracks().forEach(track => track.stop());
-                remoteVideo.srcObject = null;
-            }
-
-            if (localVideo.srcObject) {
-                localVideo.srcObject.getTracks().forEach(track => track.stop());
-                localVideo.srcObject = null;
-            }
-            */
-
-            this.RTCConnection.close();
-            this.RTCConnection = null;
+        // remote
+        if (this.remoteVideo.srcObject) {
+            this.remoteVideo.srcObject.getTracks().forEach(track => track.stop());
+            this.remoteVideo.srcObject = null;
         }
+
+        // local
+        if (this.localVideo.srcObject) {
+            this.localVideo.srcObject.getTracks().forEach(track => track.stop());
+            this.localVideo.srcObject = null;
+            this.localStream = null;
+        }
+
+        this.RTCConnection.close();
+        this.RTCConnection = null;
+    
     }
 
     iceCandidateHandler(event) {
@@ -312,42 +274,6 @@ class Client {
 
 }
 
-function prepareInterface(username) {
-    var text = "Hello  " + username
-    document.getElementById("hello").innerHTML = text;
-    document.getElementById("formdiv").style.display = "none";
-    document.getElementById("camdiv").style.display = "block";
-    console.log(text);
-}
-
-
-function runcam(){
-	
-	var video = document.querySelector("#localVideo");
- 
-	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
-	 
-		if (navigator.getUserMedia) {       
-			navigator.getUserMedia({video: true}, handleVideo, videoError);
-		}
-}
-
-function handleVideo(stream) {
-    video.src = window.URL.createObjectURL(stream);
-}
- 
-function videoError(e) {
-    // do something
-}
-
-
-//connection starts on button click
-joinButton.onclick = (event) => {
-    let username = document.getElementById("form1").elements[0].value
-
-    prepareInterface(username);
-	runcam();
-
-    let client = new Client(username);
-};
-
+window.onload = () => {
+    let client = new Client();
+}; 

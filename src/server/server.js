@@ -44,6 +44,7 @@ class Server {
                 socket: socket,
                 id: id,
                 username: username,
+                status: 0,
                 game: null
             };
 
@@ -92,8 +93,7 @@ class Server {
         );
 
         let msg = {
-            cmd: "new_game",
-            caller: player1.id
+            cmd: "new_game"
         }
 
         for (let player of game.players) {
@@ -112,11 +112,15 @@ class Server {
             });
 
             player.game = null;
+            player.status = 0;
             this.lobby.push(player);
         }
 
         // Finish game
         game.finish();
+
+        // Search new match
+        this.matchLobby();
     }
 
     removePlayerFromLobby(player) {
@@ -138,6 +142,16 @@ class Server {
         }
     }
 
+    isGameReady(game)
+    {
+        for (let player of game.players) {
+            if(player.status == 0)
+                return false;
+        }
+
+        return true;
+    }
+
     handleMessages(message, player) {
         //console.log("Message from client:", message);
 
@@ -151,6 +165,22 @@ class Server {
                     });
 
                     break;
+                }
+
+            case "ready":
+                {
+                    if (player.game != null)
+                    {
+                        player.status = 1;
+
+                        if(this.isGameReady(player.game))
+                        {
+                            player.socket.emit('send', {
+                                cmd: "connect"
+                            });
+                        }
+                    }
+
                 }
 
         }
