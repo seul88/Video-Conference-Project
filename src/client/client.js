@@ -2,9 +2,7 @@ const webrtc = require('webrtc-adapter');
 const io = require('socket.io-client');
 const adapter = require('webrtc-adapter');
 
-var button = document.getElementById("sendMessageButton");
-var joinButton = document.getElementById("btn1");
-
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
 
 /*
 https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling#Handling_the_invitation
@@ -12,7 +10,8 @@ https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_
 
 import { GameClient } from './../shared/GameClient';
 import { BombGame } from './../shared/games/BombGame';
-import { Renderer } from './renderer'
+import { Renderer } from './renderer';
+import { Template } from './template';
 
 class Client {
     constructor(username) {
@@ -20,7 +19,7 @@ class Client {
 
         this.socket = null;
         this.textChannel = null;
-        this.username = username;
+
         this.id = null;
 
         //this.rendered = new Renderer();
@@ -34,9 +33,11 @@ class Client {
         this.remoteVideo = document.getElementById("remoteVideo");
         this.localVideo = document.getElementById("localVideo");
 
-        this.createIO();
-
-        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
+        this.template = new Template();
+        this.template.onJoin = (username) => {
+            this.username = username;
+            this.createIO();
+        }
     }
 
     parseMessageIO(message) {
@@ -257,7 +258,7 @@ class Client {
 
         this.RTCConnection.close();
         this.RTCConnection = null;
-    
+
     }
 
     iceCandidateHandler(event) {
@@ -274,49 +275,6 @@ class Client {
 
 }
 
-<<<<<<< HEAD
 window.onload = () => {
     let client = new Client();
-}; 
-=======
-function prepareInterface(username) {
-    var text = "Hello  " + username
-    document.getElementById("hello").innerHTML = text;
-    document.getElementById("formdiv").style.display = "none";
-    document.getElementById("camdiv").style.display = "block";
-	document.getElementById("gamediv").style.display="block";
-    console.log(text);
-}
-
-
-function runcam(){
-	
-	var video = document.querySelector("#localVideo");
- 
-	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
-	 
-		if (navigator.getUserMedia) {       
-			navigator.getUserMedia({video: true}, handleVideo, videoError);
-		}
-}
-
-function handleVideo(stream) {
-    video.src = window.URL.createObjectURL(stream);
-}
- 
-function videoError(e) {
-    // do something
-}
-
-
-//connection starts on button click
-joinButton.onclick = (event) => {
-    let username = document.getElementById("form1").elements[0].value
-
-    prepareInterface(username);
-	runcam();
-
-    let client = new Client(username);
 };
-
->>>>>>> d4348bf30c71b84d9391212c68dfb3ae7e73c359

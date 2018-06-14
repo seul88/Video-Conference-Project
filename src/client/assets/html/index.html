@@ -7,17 +7,34 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
 	 crossorigin="anonymous">
-	<link rel="stylesheet" type="text/css" href="mystyle.css">
 </head>
 
-<body>
+<body class="page-wrapper" id="page">
+
+	<canvas class="page-bg"></canvas>
+
+	<div class="container page-container d-flex">
+		<div class="align-self-center">
+
+			<div class="welcome">
+					<h1>Video Game Room v.1</h1>
+					<p>Enter your username in input below.</p>
+					<p class="pt-3 form-inline">
+						<input class="form-control form-control-md input-nick" type="text" placeholder="Your nick" id="input-username"> 
+						<button type="button" class="btn ml-2 btn-md" id="btn-join">Join</button>
+					</p>
+			</div>
+
+		</div>
+	</div>
+
 	<div id="container">
 		<h1 id="hello">Video Conference Project</h1>
 		<video id="localVideo" width="440" height="240" autoplay muted></video>
 		<video id="remoteVideo" width="440" height="240" autoplay></video>
 	</div>
 
-</script>
+	</script>
 	<script src="client.js"></script>
 	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
 	 crossorigin="anonymous"></script>
