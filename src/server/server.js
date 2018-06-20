@@ -72,8 +72,10 @@ class Server {
     handleDisconnect(player) {
         console.log("User " + player.username + " disconnected.");
 
+        let playingGame = (player.game != null);
+
         // Close match
-        if (player.game != null)
+        if (playingGame)
             this.finishGame(player.game);
 
         // Delete from lobby
@@ -81,6 +83,10 @@ class Server {
 
         // Delete from players
         delete this.players[player.id];
+
+        // Search new match
+        if (playingGame)
+            this.matchLobby();
     }
 
     createGame(player1, player2) {
@@ -118,9 +124,6 @@ class Server {
 
         // Finish game
         game.finish();
-
-        // Search new match
-        this.matchLobby();
     }
 
     removePlayerFromLobby(player) {
@@ -181,6 +184,17 @@ class Server {
                         }
                     }
 
+                    break;
+                }
+            case "abandon":
+                {
+                    if (player.game != null)
+                    {
+                        this.finishGame(player.game);
+                        this.matchLobby();
+                    }
+
+                    break;
                 }
 
         }

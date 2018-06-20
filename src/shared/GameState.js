@@ -13,6 +13,8 @@ export class GameState {
     }
 
     emitOnChange() {
+        console.log(this.state);
+
         if (this.onChange)
             this.onChange(this.state);
     }

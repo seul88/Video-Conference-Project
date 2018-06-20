@@ -22,8 +22,6 @@ class Client {
 
         this.id = null;
 
-        //this.rendered = new Renderer();
-
         this.game = null;
         this.gameClient = null;
 
@@ -34,9 +32,35 @@ class Client {
         this.localVideo = document.getElementById("localVideo");
 
         this.template = new Template();
+        this.template.showLoginSplash();
         this.template.onJoin = (username) => {
             this.username = username;
             this.createIO();
+            this.template.hideLoginSplash();
+            this.template.showWaitingSplash();
+        }
+        this.template.onAbandon = () => {
+            this.socket.emit('send', {
+                cmd: "abandon"
+            });
+        }
+
+        this.template.onReady = () => {
+            this.template.hidePartnerSplash();
+            this.template.showGameSplash();
+
+            
+            this.game = new BombGame();
+
+            this.gameClient = new GameClient(this.game, this.socket, this.id);
+            this.gameClient.start();
+
+            this.rendered = new Renderer(this.gameClient);
+
+            this.game.onChange = (state) => {
+                this.rendered.applyState(state);
+            };
+
         }
     }
 
@@ -71,14 +95,8 @@ class Client {
                     */
                     this.createRTC();
 
-                    /*
-                    this.game = new BombGame();
-                    this.game.onChange = (state) => {
-                        console.log(state);
-                    };
-                    this.gameClient = new GameClient(this.game, this.socket, this.id);
-                    this.gameClient.start();
-                    */
+                   this.template.hideWaitingSplash();
+                   this.template.showPartnerSplash();
 
                     break;
                 }
@@ -118,6 +136,9 @@ class Client {
                     }
                     */
                     this.closeRTC();
+
+                    this.template.hidePartnerSplash();
+                    this.template.showWaitingSplash();
 
                     break;
                 }
@@ -239,7 +260,6 @@ class Client {
             this.remoteVideo.srcObject = e.streams[0];
         }
     }
-
 
     closeRTC() {
 

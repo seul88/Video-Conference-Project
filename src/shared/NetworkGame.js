@@ -12,14 +12,16 @@ export class NetworkGame {
 
     subscribePlayer(id, socket) {
         socket.on('game', (message) => {
+            console.log("odebrano rpc: " + message.procedure);
+
             let isNew = message.timestamp >= this.timestamp;
 
             if (isNew || this.accept_old)
             {
-                this.handleRPC(id, message.procedure, message.args);
-
                 if(isNew)
                     this.timestamp = message.timestamp;
+
+                this.handleRPC(id, message.procedure, message.args);
             }
         });
     }
@@ -33,6 +35,8 @@ export class NetworkGame {
     }
 
     sendRPC(socket, procedure, args) {
+        console.log("wyslano rpc: " + procedure, this.timestamp);
+
         socket.emit('game', {
             procedure: procedure,
             args: args,

@@ -53,7 +53,7 @@ export class BombGame extends GameState {
 
         this.state.cut_cables.push(args.number);
 
-        if(typeof this.cables_order != 'undefined')
+        if(this.cables_order.length != 0)
             this.checkWinState();
 
         this.emitOnChange();

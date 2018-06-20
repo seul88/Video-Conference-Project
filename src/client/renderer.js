@@ -18,7 +18,8 @@ import { Emitter } from 'pixi-particles';
 */
 
 export class Renderer {
-    constructor() {
+    constructor(netClient) {
+        this.netClient = netClient;
 
         /* ------------------------------------ CANVAS ------------------------------------ */
         this.app = new PIXI.Application({
@@ -51,7 +52,7 @@ export class Renderer {
                 "images/cables/opened/cable_open.svg",
                 "images/timer.svg",
                 "images/circle.svg",
-				"images/explosion.json"
+                "images/explosion.json"
             ])
             .load(this.setup.bind(this));
     }
@@ -79,8 +80,10 @@ export class Renderer {
 
         this.app.stage.removeChild(this.cables[number].closed);
         this.app.stage.addChild(this.cables[number].opened);
-		this.explosion();
-		
+
+        this.netClient.do('cutTheCable', {
+            number: number
+        })
     }
 
     applyState(state) {
@@ -88,7 +91,7 @@ export class Renderer {
         /*
         state object looks like
 
-        this.state = {
+        state = {
             sapper: sapper,
             trainer: trainer,
             cut_cables: [],
@@ -96,28 +99,43 @@ export class Renderer {
             defused: false
         }
         */
+
+        for (let number = 1; number < this.cables.length; ++number) {
+            if (state.cut_cables.indexOf(number) != -1) {
+                this.app.stage.removeChild(this.cables[number].closed);
+                this.app.stage.addChild(this.cables[number].opened);
+            }
+            else {
+                this.app.stage.removeChild(this.cables[number].opened);
+                this.app.stage.addChild(this.cables[number].closed);
+            }
+        }
+
+        if (state.finished && !state.defused) {
+            this.explosion();
+        }
     }
 
     addCable(number, imageClosed, imageOpened, x, y) {
         let closedSprite = new PIXI.Sprite(PIXI.loader.resources[imageClosed].texture);
         let openedSprite = new PIXI.Sprite(PIXI.loader.resources[imageOpened].texture);
-		
-		closedSprite.x = x
-		closedSprite.y = y
-		openedSprite.x = x
-		openedSprite.y = y
-		closedSprite.scale.x = 0.75
-		closedSprite.scale.y = 0.75
-		openedSprite.scale.x = 0.75
-		openedSprite.scale.y = 0.75
-		
+
+        closedSprite.x = x
+        closedSprite.y = y
+        openedSprite.x = x
+        openedSprite.y = y
+        closedSprite.scale.x = 0.75
+        closedSprite.scale.y = 0.75
+        openedSprite.scale.x = 0.75
+        openedSprite.scale.y = 0.75
+
         closedSprite.interactive = true;
         closedSprite.on('pointerdown', () => {
             this.onCutCable(number);
         });
 
         this.app.stage.addChild(closedSprite);
-       // this.app.stage.addChild(openedSprite);
+        // this.app.stage.addChild(openedSprite);
 
         this.cables[number] = {
             closed: closedSprite,
@@ -125,50 +143,48 @@ export class Renderer {
         }
     }
 
-	explosion(){
+    explosion() {
         let flame = new PIXI.Container();
         flame.x = 550;
-		flame.y = 450;
-		flame.scale.x = 2.2;
-		flame.scale.y = 2.2;
-		this.app.stage.addChild(flame);
-		let json = PIXI.loader.resources["images/explosion.json"];
-		console.log(json.data);
-			var emitter = new PIXI.particles.Emitter(	
-				flame,
-				[PIXI.Texture.fromImage('images/smokeparticle.png')],
-				json.data
-				);
+        flame.y = 450;
+        flame.scale.x = 2.2;
+        flame.scale.y = 2.2;
+        this.app.stage.addChild(flame);
+        let json = PIXI.loader.resources["images/explosion.json"];
+        console.log(json.data);
+        var emitter = new PIXI.particles.Emitter(
+            flame,
+            [PIXI.Texture.fromImage('images/smokeparticle.png')],
+            json.data
+        );
 
-			// Calculate the current time
-			var elapsed = Date.now();
-					
-			// Update function every frame
-			var update = function(){
-						
-				// Update the next frame
-				requestAnimationFrame(update);
+        // Calculate the current time
+        var elapsed = Date.now();
 
-				var now = Date.now();
-				
-				// The emitter requires the elapsed
-				// number of seconds since the last update
-				emitter.update((now - elapsed) * 0.001);
-				elapsed = now;
-				
-				// Should re-render the PIXI Stage
-				// renderer.render(stage);
-			};
+        // Update function every frame
+        var update = function () {
+
+            // Update the next frame
+            requestAnimationFrame(update);
+
+            var now = Date.now();
+
+            // The emitter requires the elapsed
+            // number of seconds since the last update
+            emitter.update((now - elapsed) * 0.001);
+            elapsed = now;
+
+            // Should re-render the PIXI Stage
+            // renderer.render(stage);
+        };
 
 
-			emitter.emit = true;
+        emitter.emit = true;
 
-			update();		
-	}
-	
+        update();
+    }
+
     setup() {
-
-       
         /* ------------------------------------ IMAGES - add to canvas ------------------------------------ */
 
 
@@ -207,14 +223,6 @@ export class Renderer {
             timer.rotation += timerRotationSpeed;
             clockwheel.rotation += timerRotationSpeed;
         });
-		
-		
-		
-
-					
-		 // Click listener
-        this.app.view.addEventListener("click", this.onClickCanvas.bind(this));
-
 
     }
 }

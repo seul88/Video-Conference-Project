@@ -40,3 +40,31 @@ html {
     filter: blur(calc(2px));
   }
   
+
+/*
+  Partner splash
+*/
+.video-wrapper {
+  display: block;
+  background-color: #8b8bff;
+  position: relative;
+}
+
+.local-video {
+  right: 0;
+  bottom: 0;
+  position: absolute;
+  z-index: 3;
+  width: 100px;
+  border: 2px solid #8b8bff;
+  margin: 3px;
+}
+
+.remote-video {
+  position: relative;
+  z-index: 2;
+  width: 300px;
+  padding: 5px;
+  margin: 0;
+  display: block;
+}
