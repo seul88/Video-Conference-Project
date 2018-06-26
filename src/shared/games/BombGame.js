@@ -27,13 +27,13 @@ export class BombGame extends GameState {
         this.state.cables_order = Utilities.shuffle(this.state.cables_order);
 
         // Create timer
-        const seconds = 10;
+        const seconds = 15;
 
         let deadline = new Date();
         deadline.setSeconds(deadline.getSeconds() + seconds);
         this.state.end_timestamp = deadline.getTime();
 
-        setInterval(() => {
+        setTimeout(() => {
             this.checkWinState();
             this.emitOnChange();
             console.log('Bomb timeout');

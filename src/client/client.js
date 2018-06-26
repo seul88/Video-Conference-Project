@@ -119,7 +119,7 @@ class Client {
                     break;
                 }
 
-            case "finish_game":
+            case "finish_room":
                 {
                     /*
                     {

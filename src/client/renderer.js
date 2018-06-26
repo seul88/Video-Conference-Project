@@ -59,7 +59,7 @@ export class Renderer {
         return Math.floor((Math.random() * 4) + 1)
     }
 
-    onCutCable(number) {        
+    onCutCable(number) {
         this.netClient.do('cutTheCable', {
             number: number
         })
@@ -80,14 +80,15 @@ export class Renderer {
         */
 
         console.log(state);
-        if(state.role == 'trainer')
-        {
+        if (state.role == 'trainer') {
             let pattern = '';
-            for(let cable of state.cables_order)
+            for (let cable of state.cables_order)
                 pattern += cable + ' ';
 
             this.updateText('Bomb defusing pattern: ' + pattern);
         }
+
+        this.updateTimer(state.end_timestamp);
 
         for (let number = 1; number < this.cables.length; ++number) {
             if (state.cut_cables.indexOf(number) != -1) {
@@ -105,10 +106,14 @@ export class Renderer {
         }
     }
 
-    updateText(newText)
-    {
+    updateText(newText) {
         this.text.text = newText;
-        this.text.x = this.app.screen.width/2 - this.text.width/2;
+        this.text.x = this.app.screen.width / 2 - this.text.width / 2;
+    }
+
+    updateTimer(timerDataEnd) {
+        this.timerAllTime = timerDataEnd - this.timerDataStart; // e.g. 30sec
+        this.timerRotationSpeed = Math.PI * 2 / this.timerAllTime;
     }
 
     addCable(number, imageClosed, imageOpened, x, y) {
@@ -198,30 +203,39 @@ export class Renderer {
         /* ------------------------------------ TIMER ------------------------------------ */
 
 
-        let timer = new PIXI.Sprite(PIXI.loader.resources["images/timer.svg"].texture);
-        timer.anchor.set(0.5);
-        timer.x = 435;
-        timer.y = 480;
-        this.app.stage.addChild(timer);
+        this.timer = new PIXI.Sprite(PIXI.loader.resources["images/timer.svg"].texture);
+        this.timer.anchor.set(0.5);
+        this.timer.x = 435;
+        this.timer.y = 480;
+        this.app.stage.addChild(this.timer);
 
 
-        let clockwheel = new PIXI.Sprite(PIXI.loader.resources["images/circle.svg"].texture);
-        clockwheel.x = 435;
-        clockwheel.y = 478;
-        clockwheel.height = 28;
-        clockwheel.width = 28;
-        clockwheel.anchor.set(0.5);
-        this.app.stage.addChild(clockwheel);
+        this.clockwheel = new PIXI.Sprite(PIXI.loader.resources["images/circle.svg"].texture);
+        this.clockwheel.x = 435;
+        this.clockwheel.y = 478;
+        this.clockwheel.height = 28;
+        this.clockwheel.width = 28;
+        this.clockwheel.anchor.set(0.5);
+        this.app.stage.addChild(this.clockwheel);
 
-        var timerRotationSpeed = 0.005;
+
+        this.timerDataStart = Date.now();
+        this.timerRotationSpeed = .0;
+        this.timerSet = false;
+
         this.app.ticker.add(() => {
-            timer.rotation += timerRotationSpeed;
-            clockwheel.rotation += timerRotationSpeed;
+            if (this.timer.rotation < Math.PI * 3) {
+                let delayed = Date.now() - this.timerDataStart;   // delayed from start, e.g. 10sec (1/3)
+                let rotation = this.timerRotationSpeed * delayed;
+
+                this.timer.rotation = Math.PI + rotation;
+                this.clockwheel.rotation = Math.PI + rotation;
+            }
         });
 
         /* ------------------------------------ TEXT ------------------------------------ */
 
-        
+
         this.text = new PIXI.Text("", {
             fontFamily: 'Arial',
             fontSize: 36,
@@ -229,7 +243,7 @@ export class Renderer {
             fill: 'white'
         });
         this.text.y = this.app.screen.height - 135;
-        this.text.x = this.app.screen.width/2 - this.text.width/2;
+        this.text.x = this.app.screen.width / 2 - this.text.width / 2;
 
         this.app.stage.addChild(this.text);
 
