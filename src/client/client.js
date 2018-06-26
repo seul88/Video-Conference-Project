@@ -202,7 +202,6 @@ class Client {
                     this.template.hidePartnerSplash();
                     this.template.showGameSplash();
 
-                    
                     this.game = new BombGame();
 
                     this.gameClient = new GameClient(this.game, this.socket, this.id);

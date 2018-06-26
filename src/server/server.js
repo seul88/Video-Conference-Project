@@ -219,10 +219,9 @@ class Server {
                     break;
                 }
 
-            case "get_state":
+            case "setup_player":
                 {
-                    player.game.sendStateToPlayer(player);
-
+                    player.game.sendReplication(player);
                     break;
                 }
 

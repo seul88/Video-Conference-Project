@@ -14,7 +14,7 @@ export class GameClient extends NetworkGame {
         this.subscribePlayer(this.id, this.socket);
 
         this.socket.emit('send', {
-            cmd: "get_state"
+            cmd: "setup_player"
         });
     }
 
@@ -23,8 +23,7 @@ export class GameClient extends NetworkGame {
         super.finish();
     }
 
-    do(procedure, args)
-    {
+    do(procedure, args) {
         this.stamp();
         this.handleRPC(this.id, procedure, args);
         this.sendRPC(this.socket, procedure, args);

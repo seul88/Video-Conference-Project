@@ -1,22 +1,6 @@
 import * as PIXI from 'pixi.js'
 import { Emitter } from 'pixi-particles';
 
-/*
-    Czesc Erwin, sorry ze Ci tutaj tak namieszalem, ale nie moglem 
-    zintegorwac tego z klasa klient. Juz Ci pisze co i jak:
-    1. Na te chwile usunalem ten filtr blura, ale zostal na githubie wiec
-    w przyslosci mozesz go latwo przywrocic - zrobilem to dlatego, ze zmienila sie
-    troche logika tej klasy, ale o tym nizej
-		
-		2. SVG z kabelkami nie mozesz robic o rozmiarze calej bomby, tylko musisz 
-		je zrobic w rozmiarze obszaru do klikniecia i ustawic ich pozycje za pomoca x/y  >>[DONE]
-		3. Wiem ze wtedy bedzie troche inaczej odnosnie skalowania, ale na te chwile mamy sztywno okienko
-		1200x900 wiec nie ma problemu >>[DONE]
-    4. Tutaj nie implementujesz logiki gry samej w sobie, tylko odwzorowujesz wizualnie
-    stan zapisany w obiekcie state
-
-*/
-
 export class Renderer {
     constructor(netClient) {
         this.netClient = netClient;
@@ -74,10 +58,7 @@ export class Renderer {
         return Math.floor((Math.random() * 4) + 1)
     }
 
-    onCutCable(number) {
-        // turn off sprite with opened state
-        // turn on sprite with opened state
-        
+    onCutCable(number) {        
         this.netClient.do('cutTheCable', {
             number: number
         })
@@ -96,6 +77,8 @@ export class Renderer {
             defused: false
         }
         */
+
+        console.log(state);
 
         for (let number = 1; number < this.cables.length; ++number) {
             if (state.cut_cables.indexOf(number) != -1) {
@@ -220,6 +203,5 @@ export class Renderer {
             timer.rotation += timerRotationSpeed;
             clockwheel.rotation += timerRotationSpeed;
         });
-
     }
 }
