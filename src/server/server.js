@@ -45,7 +45,7 @@ class Server {
                 id: id,
                 username: username,
                 status: 0,
-                ready:0,
+                ready: 0,
                 game: null
             };
 
@@ -146,10 +146,9 @@ class Server {
         }
     }
 
-    isGameReady(game)
-    {
+    isGameReady(game) {
         for (let player of game.players) {
-            if(player.status == 0)
+            if (player.status == 0)
                 return false;
         }
 
@@ -173,12 +172,10 @@ class Server {
 
             case "ready":
                 {
-                    if (player.game != null)
-                    {
+                    if (player.game != null) {
                         player.status = 1;
 
-                        if(this.isGameReady(player.game))
-                        {
+                        if (this.isGameReady(player.game)) {
                             player.socket.emit('send', {
                                 cmd: "connect"
                             });
@@ -189,8 +186,7 @@ class Server {
                 }
             case "abandon":
                 {
-                    if (player.game != null)
-                    {
+                    if (player.game != null) {
                         this.finishGame(player.game);
                         this.matchLobby();
                     }
@@ -198,29 +194,37 @@ class Server {
                     break;
                 }
             case "ready_for_game":
-            {
-                console.log(player.username+" is ready for game")
-                this.players[player.id].ready=1
-                let bothReady = true
-                for (var player in this.players) {
-                    if (this.players.hasOwnProperty(player)) {
-                        if(this.players[player].ready==0){
-                            bothReady=false
-                        }
-                    }
-                }
+                {
+                    console.log(player.username + " is ready for game");
 
-                if(bothReady){
+                    this.players[player.id].ready = 1;
+                    let bothReady = true;
                     for (var player in this.players) {
                         if (this.players.hasOwnProperty(player)) {
-                            this.players[player].socket.emit('send', {
-                                cmd: "go"
-                            });
+                            if (this.players[player].ready == 0) {
+                                bothReady = false
+                            }
                         }
                     }
+
+                    if (bothReady) {
+                        for (var player in this.players) {
+                            if (this.players.hasOwnProperty(player)) {
+                                this.players[player].socket.emit('send', {
+                                    cmd: "go"
+                                });
+                            }
+                        }
+                    }
+                    break;
                 }
-                break;
-            }
+
+            case "get_state":
+                {
+                    player.game.sendStateToPlayer(player);
+
+                    break;
+                }
 
         }
     }

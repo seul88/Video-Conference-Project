@@ -17,7 +17,7 @@ export class GameServer extends NetworkGame {
             this.subscribePlayer(player.id, player.socket);
         }
 
-        this.state.emitOnChange();
+        //this.state.emitOnChange();
     }
 
     finish() {
@@ -32,5 +32,9 @@ export class GameServer extends NetworkGame {
         for (let player of this.players) {
             this.sendRPC(player.socket, 'replication', state);
         }
+    }
+
+    sendStateToPlayer(player) {
+        this.sendRPC(player.socket, 'replication', this.state);
     }
 }

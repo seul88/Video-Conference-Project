@@ -12,6 +12,10 @@ export class GameClient extends NetworkGame {
     start() {
         super.start();
         this.subscribePlayer(this.id, this.socket);
+
+        this.socket.emit('send', {
+            cmd: "get_state"
+        });
     }
 
     finish() {

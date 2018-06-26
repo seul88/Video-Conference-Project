@@ -77,10 +77,7 @@ export class Renderer {
     onCutCable(number) {
         // turn off sprite with opened state
         // turn on sprite with opened state
-
-        this.app.stage.removeChild(this.cables[number].closed);
-        this.app.stage.addChild(this.cables[number].opened);
-
+        
         this.netClient.do('cutTheCable', {
             number: number
         })
