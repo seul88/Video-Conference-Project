@@ -2,8 +2,9 @@ import * as PIXI from 'pixi.js'
 import { Emitter } from 'pixi-particles';
 
 export class Renderer {
-    constructor(netClient) {
+    constructor(netClient, onInit) {
         this.netClient = netClient;
+        this.onInit = onInit;
 
         /* ------------------------------------ CANVAS ------------------------------------ */
         this.app = new PIXI.Application({
@@ -79,6 +80,14 @@ export class Renderer {
         */
 
         console.log(state);
+        if(state.role == 'trainer')
+        {
+            let pattern = '';
+            for(let cable of state.cables_order)
+                pattern += cable + ' ';
+
+            this.updateText('Bomb defusing pattern: ' + pattern);
+        }
 
         for (let number = 1; number < this.cables.length; ++number) {
             if (state.cut_cables.indexOf(number) != -1) {
@@ -94,6 +103,12 @@ export class Renderer {
         if (state.finished && !state.defused) {
             this.explosion();
         }
+    }
+
+    updateText(newText)
+    {
+        this.text.text = newText;
+        this.text.x = this.app.screen.width/2 - this.text.width/2;
     }
 
     addCable(number, imageClosed, imageOpened, x, y) {
@@ -203,5 +218,22 @@ export class Renderer {
             timer.rotation += timerRotationSpeed;
             clockwheel.rotation += timerRotationSpeed;
         });
+
+        /* ------------------------------------ TEXT ------------------------------------ */
+
+        
+        this.text = new PIXI.Text("", {
+            fontFamily: 'Arial',
+            fontSize: 36,
+            fontWeight: 'bold',
+            fill: 'white'
+        });
+        this.text.y = this.app.screen.height - 135;
+        this.text.x = this.app.screen.width/2 - this.text.width/2;
+
+        this.app.stage.addChild(this.text);
+
+        //
+        this.onInit();
     }
 }

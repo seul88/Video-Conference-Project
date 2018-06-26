@@ -48,8 +48,8 @@ class Client {
         this.template.onReady = () => {
 
             this.socket.emit('send', {
-                cmd: "ready_for_game",
-                data: "ready_for_game"
+                cmd: "ready_room",
+                data: "ready_room"
             });
 
         }
@@ -77,7 +77,7 @@ class Client {
                     break;
                 }
 
-            case "new_game":
+            case "partner_found":
                 {
                     /*
                     {
@@ -86,12 +86,12 @@ class Client {
                     */
                     this.createRTC();
 
-                   this.template.hideWaitingSplash();
-                   this.template.showPartnerSplash();
+                    this.template.hideWaitingSplash();
+                    this.template.showPartnerSplash();
 
                     break;
                 }
-            case "connect":
+            case "connect_with_partner":
                 {
                     /*
                     {
@@ -133,6 +133,36 @@ class Client {
 
                     break;
                 }
+
+            case "ready_room_ack":
+                {
+                    console.log("Received signal that both players ready")
+
+                    this.template.hidePartnerSplash();
+                    this.template.showGameSplash();
+
+                    this.game = new BombGame();
+                    this.gameClient = new GameClient(this.game, this.socket, this.id);
+
+                    // This is so ugly - we need finished state machine not this monster
+                    this.rendered = new Renderer(this.gameClient, () => {
+                        this.game.onChange = (state) => {
+                            this.rendered.applyState(state);
+                        };
+
+                        this.gameClient.start();
+
+                        this.socket.emit('send', {
+                            cmd: "ready_game"
+                        });
+                    });
+
+
+                    break;
+                }
+
+
+            /* WEBRTC */
             case "candidate":
                 {
                     /*
@@ -195,25 +225,6 @@ class Client {
 
                     break;
                 }
-                case "go":
-                {
-                    console.log("Received signal that both players ready")
-
-                    this.template.hidePartnerSplash();
-                    this.template.showGameSplash();
-
-                    this.game = new BombGame();
-
-                    this.gameClient = new GameClient(this.game, this.socket, this.id);
-                    this.gameClient.start();
-
-                    this.rendered = new Renderer(this.gameClient);
-
-                    this.game.onChange = (state) => {
-                        this.rendered.applyState(state);
-                    };
-
-                }
         }
     }
 
@@ -256,7 +267,7 @@ class Client {
                 });
 
                 this.socket.emit('send', {
-                    cmd: "ready"
+                    cmd: "ready_for_partner"
                 });
 
             })

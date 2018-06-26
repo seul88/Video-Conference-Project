@@ -2,7 +2,7 @@
 export class NetworkGame {
     constructor(state) {
         this.state = state;
-        this.timestamp = Date.now();
+        this.timestamp = null;
         this.accept_old = false;
     }
 
@@ -18,6 +18,8 @@ export class NetworkGame {
 
             if (isNew || this.accept_old)
             {
+                console.log("zaakceptowano rpc");
+
                 if(isNew)
                     this.timestamp = message.timestamp;
 

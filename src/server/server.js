@@ -5,7 +5,6 @@ const io = require('socket.io')(http);
 const crypto = require("crypto");
 
 import { GameServer } from './../shared/GameServer';
-import { BombGame } from './../shared/games/BombGame';
 
 class Server {
     constructor() {
@@ -45,8 +44,7 @@ class Server {
                 id: id,
                 username: username,
                 status: 0,
-                ready: 0,
-                game: null
+                room: null
             };
 
             this.lobby.push(player);
@@ -73,11 +71,11 @@ class Server {
     handleDisconnect(player) {
         console.log("User " + player.username + " disconnected.");
 
-        let playingGame = (player.game != null);
+        let inRoom = (player.room != null);
 
         // Close match
-        if (playingGame)
-            this.finishGame(player.game);
+        if (inRoom)
+            this.finishRoom(player.room);
 
         // Delete from lobby
         this.removePlayerFromLobby(player);
@@ -86,45 +84,41 @@ class Server {
         delete this.players[player.id];
 
         // Search new match
-        if (playingGame)
+        if (inRoom)
             this.matchLobby();
     }
 
-    createGame(player1, player2) {
-        let state = new BombGame();
-        state.init(player1.id, player2.id);
-
-        let game = new GameServer(
-            state,
+    createRoom(player1, player2) {
+        let room = new GameServer(
             [player1, player2]
         );
 
         let msg = {
-            cmd: "new_game"
+            cmd: "partner_found"
         }
 
-        for (let player of game.players) {
-            player.game = game;
+        for (let player of room.players) {
+            player.room = room;
             player.socket.emit('send', msg);
         }
 
-        game.start();
+        room.start();
     }
 
-    finishGame(game) {
+    finishRoom(room) {
         // Add players to lobby
-        for (let player of game.players) {
+        for (let player of room.players) {
             player.socket.emit('send', {
-                cmd: "finish_game"
+                cmd: "finish_room"
             });
 
-            player.game = null;
+            player.room = null;
             player.status = 0;
             this.lobby.push(player);
         }
 
         // Finish game
-        game.finish();
+        room.finish();
     }
 
     removePlayerFromLobby(player) {
@@ -136,27 +130,28 @@ class Server {
     }
 
     forPartners(player, callback) {
-        if (player.game == null)
-            throw "Player " + player.username + " does not have any active game";
+        if (player.room == null)
+            throw "Player " + player.username + " does not have any active rooms";
 
         // Add players to lobby
-        for (let partner of player.game.players) {
+        for (let partner of player.room.players) {
             if (player != partner)
                 callback(partner);
         }
     }
 
-    isGameReady(game) {
-        for (let player of game.players) {
-            if (player.status == 0)
+    checkRoomStatus(room, status) {
+        for (let player of room.players) {
+            if (player.status != status)
                 return false;
         }
 
         return true;
     }
 
+
     handleMessages(message, player) {
-        //console.log("Message from client:", message);
+        console.log("Message from client:", message.cmd);
 
         switch (message.cmd) {
             case "offer":
@@ -169,21 +164,6 @@ class Server {
 
                     break;
                 }
-
-            case "ready":
-                {
-                    if (player.game != null) {
-                        player.status = 1;
-
-                        if (this.isGameReady(player.game)) {
-                            player.socket.emit('send', {
-                                cmd: "connect"
-                            });
-                        }
-                    }
-
-                    break;
-                }
             case "abandon":
                 {
                     if (player.game != null) {
@@ -193,35 +173,49 @@ class Server {
 
                     break;
                 }
-            case "ready_for_game":
+            case "ready_for_partner":
                 {
-                    console.log(player.username + " is ready for game");
+                    if (player.room != null) {
+                        player.status = 1;
 
-                    this.players[player.id].ready = 1;
-                    let bothReady = true;
-                    for (var player in this.players) {
-                        if (this.players.hasOwnProperty(player)) {
-                            if (this.players[player].ready == 0) {
-                                bothReady = false
-                            }
+                        if (this.checkRoomStatus(player.room, 1)) {
+                            player.socket.emit('send', {
+                                cmd: "connect_with_partner"
+                            });
                         }
                     }
 
-                    if (bothReady) {
-                        for (var player in this.players) {
-                            if (this.players.hasOwnProperty(player)) {
-                                this.players[player].socket.emit('send', {
-                                    cmd: "go"
+                    break;
+                }
+
+            case "ready_room":
+                {
+                    console.log(player.username + " is ready for game");
+
+                    if (player.room != null) {
+                        player.status = 2;
+
+                        if (this.checkRoomStatus(player.room, 2)) {
+                            for (let client of player.room.players) {
+                                client.socket.emit('send', {
+                                    cmd: "ready_room_ack"
                                 });
                             }
                         }
                     }
+
                     break;
                 }
 
-            case "setup_player":
+            case "ready_game":
                 {
-                    player.game.sendReplication(player);
+                    if (player.room != null) {
+                        player.status = 3;
+
+                        if (this.checkRoomStatus(player.room, 3)) {
+                            player.room.play();
+                        }
+                    }
                     break;
                 }
 
@@ -230,7 +224,7 @@ class Server {
 
     matchLobby() {
         if (this.lobby.length >= 2) {
-            this.createGame(this.lobby[0], this.lobby[1]);
+            this.createRoom(this.lobby[0], this.lobby[1]);
 
             this.lobby.shift();
             this.lobby.shift();
