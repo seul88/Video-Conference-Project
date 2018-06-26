@@ -151,7 +151,7 @@ export class Renderer {
         console.log(json.data);
         var emitter = new PIXI.particles.Emitter(
             flame,
-            [PIXI.Texture.fromImage('images/smokeparticle.png')],
+            [PIXI.Texture.fromImage('images/CartoonSmoke.png')],
             json.data
         );
 
