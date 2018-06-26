@@ -38,5 +38,8 @@
     "webpack-dev-server": "^2.9.4",
     "webpack-node-externals": "^1.6.0",
     "webrtc-adapter": "^6.1.4"
+  },
+  "dependencies": {
+    "webpack-cli": "^3.0.8"
   }
 }
