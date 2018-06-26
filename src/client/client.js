@@ -46,20 +46,11 @@ class Client {
         }
 
         this.template.onReady = () => {
-            this.template.hidePartnerSplash();
-            this.template.showGameSplash();
 
-            
-            this.game = new BombGame();
-
-            this.gameClient = new GameClient(this.game, this.socket, this.id);
-            this.gameClient.start();
-
-            this.rendered = new Renderer(this.gameClient);
-
-            this.game.onChange = (state) => {
-                this.rendered.applyState(state);
-            };
+            this.socket.emit('send', {
+                cmd: "ready_for_game",
+                data: "ready_for_game"
+            });
 
         }
     }
@@ -203,6 +194,26 @@ class Client {
                         });
 
                     break;
+                }
+                case "go":
+                {
+                    console.log("Received signal that both players ready")
+
+                    this.template.hidePartnerSplash();
+                    this.template.showGameSplash();
+
+                    
+                    this.game = new BombGame();
+
+                    this.gameClient = new GameClient(this.game, this.socket, this.id);
+                    this.gameClient.start();
+
+                    this.rendered = new Renderer(this.gameClient);
+
+                    this.game.onChange = (state) => {
+                        this.rendered.applyState(state);
+                    };
+
                 }
         }
     }

@@ -45,6 +45,7 @@ class Server {
                 id: id,
                 username: username,
                 status: 0,
+                ready:0,
                 game: null
             };
 
@@ -196,6 +197,30 @@ class Server {
 
                     break;
                 }
+            case "ready_for_game":
+            {
+                console.log(player.username+" is ready for game")
+                this.players[player.id].ready=1
+                let bothReady = true
+                for (var player in this.players) {
+                    if (this.players.hasOwnProperty(player)) {
+                        if(this.players[player].ready==0){
+                            bothReady=false
+                        }
+                    }
+                }
+
+                if(bothReady){
+                    for (var player in this.players) {
+                        if (this.players.hasOwnProperty(player)) {
+                            this.players[player].socket.emit('send', {
+                                cmd: "go"
+                            });
+                        }
+                    }
+                }
+                break;
+            }
 
         }
     }
