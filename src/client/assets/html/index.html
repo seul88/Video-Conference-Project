@@ -38,9 +38,11 @@
 	<div id="partnerSplash" class="container page-container d-flex" style="display: none !important;">
 		<div class="align-self-center">
 			<div class="welcome">
-				<div class="video-wrapper mb-2">
-					<video id="localVideo" class="local-video" autoplay muted></video>
-					<video id="remoteVideo" class="remote-video" autoplay></video>
+				<div id="videoInSplash">
+					<div class="video-wrapper mb-2" id="videoWrapper">
+						<video id="localVideo" class="local-video" autoplay muted></video>
+						<video id="remoteVideo" class="remote-video" autoplay></video>
+					</div>
 				</div>
 				<h1>Connected</h1>
 				<p>Say hello to your game partner</p>
@@ -54,13 +56,11 @@
 
 	<div id="gameSplash" class="container page-container d-flex" style="display: none !important;">
 		<div class="align-self-center">
-
 			<div id="gamediv"></div>
-
 		</div>
 	</div>
 
-
+	<div id="videoInGame"></div>
 
 	<script src="client.js"></script>
 	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"

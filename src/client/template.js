@@ -47,6 +47,15 @@ export class Template {
 
   showGameSplash() {
     this._show(this.game_splash);
+
+    let videoWrapper = document.getElementById('videoWrapper');
+    let placeInSplash = document.getElementById('videoInSplash');
+    let placeInGame = document.getElementById('videoInGame');
+
+    placeInGame.innerHTML = '';
+    placeInSplash.innerHTML = '';
+
+    placeInGame.appendChild(videoWrapper);
   }
 
   hideGameSplash() {
@@ -55,6 +64,15 @@ export class Template {
 
   showPartnerSplash() {
     this._show(this.partner_splash);
+
+    let videoWrapper = document.getElementById('videoWrapper');
+    let placeInSplash = document.getElementById('videoInSplash');
+    let placeInGame = document.getElementById('videoInGame');
+
+    placeInGame.innerHTML = '';
+    placeInSplash.innerHTML = '';
+
+    placeInSplash.appendChild(videoWrapper);
   }
 
   hidePartnerSplash() {

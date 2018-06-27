@@ -162,16 +162,13 @@ class Client {
                             cmd: "ready_game"
                         });
                     }, () => {
+                        this.rendered.destroy();
+                        this.rendered = null;
+
+                        this.gameClient.finish();
+                        this.gameClient = null;
 
                         this.game = null;
-
-                        if(this.gameClient)
-                            this.gameClient.finish();
-                        this.gameClient = null;
-                        
-                        if(this.rendered)
-                            this.rendered.destroy();
-                        this.rendered = null;
 
                         this.template.hideGameSplash();
                         this.template.showPartnerSplash();
