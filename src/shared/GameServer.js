@@ -40,6 +40,15 @@ export class GameServer extends NetworkGame {
         for (let player of this.players) {
             this.sendReplication(player);
         }
+
+        if (state.finished)
+        {
+            for (let player of this.players) {
+                player.status = 1;
+            }
+
+            this.state.init(this.players[0].id, this.players[1].id);
+        }
     }
 
     sendReplication(player) {

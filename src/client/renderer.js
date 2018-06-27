@@ -2,13 +2,14 @@ import * as PIXI from 'pixi.js'
 import { Emitter } from 'pixi-particles';
 
 export class Renderer {
-    constructor(netClient, onInit) {
+    constructor(netClient, onInit, onEnd) {
         this.netClient = netClient;
         this.onInit = onInit;
+        this.onEnd = onEnd;
 
         /* ------------------------------------ CANVAS ------------------------------------ */
         this.app = new PIXI.Application({
-            width: 1200,
+            width: 1100,
             height: 900,
             antialias: false,
             transparent: false,
@@ -42,16 +43,29 @@ export class Renderer {
             .load(this.setup.bind(this));
     }
 
-    showText(tekst, x) {
+    showText(tekst) {
         let text = new PIXI.Text(tekst, {
             fontFamily: 'Arial',
             fontSize: 36,
             fontWeight: 'bold',
-            fill: 'white'
+            fill: 'white',
+            align: 'center'
         });
-        text.y = this.app.screen.height - 175;
-        text.x = x;
+        text.y = this.app.screen.height / 2 - text.height / 2;
+        text.x = this.app.screen.width / 2 - text.width / 2;
 
+        // bg
+        let graphics = new PIXI.Graphics();
+        let width = text.width + 50;
+        let height = text.height + 50;
+        let x = this.app.screen.width / 2 - width / 2;
+        let y = this.app.screen.height / 2 - height / 2;
+
+        graphics.beginFill(0x2c2c2f, 1);
+        graphics.drawRect(x, y, width, height);
+        
+
+        this.app.stage.addChild(graphics);
         this.app.stage.addChild(text);
     }
 
@@ -87,28 +101,51 @@ export class Renderer {
 
             this.updateText('Bomb defusing pattern: ' + pattern);
         }
+        else {
+            this.updateText('You are defusing bomb\nlisten your partner');
+        }
 
         this.updateTimer(state.end_timestamp);
 
         for (let number = 1; number < this.cables.length; ++number) {
             if (state.cut_cables.indexOf(number) != -1) {
-                this.app.stage.removeChild(this.cables[number].closed);
-                this.app.stage.addChild(this.cables[number].opened);
+                this.bombStage.removeChild(this.cables[number].closed);
+                this.bombStage.addChild(this.cables[number].opened);
             }
             else {
-                this.app.stage.removeChild(this.cables[number].opened);
-                this.app.stage.addChild(this.cables[number].closed);
+                this.bombStage.removeChild(this.cables[number].opened);
+                this.bombStage.addChild(this.cables[number].closed);
             }
         }
 
-        if (state.finished && !state.defused) {
-            this.explosion();
+        if (state.finished) {
+
+            if (!state.defused) {
+                this.explosion();
+            }
+            else {
+                let blurTimer = setInterval(() => {
+
+                    this.blurFilter.blur += .8;
+
+                    if (this.blurFilter.blur >= 10) {
+                        clearInterval(blurTimer);
+
+                        this.showText("Bomb has been defused!")
+                    }
+
+                }, 100);
+            }
+
+            setTimeout(() => {
+                this.onEnd();
+            }, 1000 * 5);
         }
     }
 
     updateText(newText) {
-        this.text.text = newText;
-        this.text.x = this.app.screen.width / 2 - this.text.width / 2;
+        this.instructions.text = newText;
+        this.instructions.x = this.app.screen.width / 2 - this.instructions.width / 2;
     }
 
     updateTimer(timerDataEnd) {
@@ -134,7 +171,7 @@ export class Renderer {
             this.onCutCable(number);
         });
 
-        this.app.stage.addChild(closedSprite);
+        this.bombStage.addChild(closedSprite);
         // this.app.stage.addChild(openedSprite);
 
         this.cables[number] = {
@@ -184,22 +221,24 @@ export class Renderer {
         update();
     }
 
-    destroy()
-    {
+    destroy() {
         PIXI.loader.reset();
         document.getElementById("gamediv").innerHTML = "";
         this.app.destroy();
     }
 
     setup() {
+        this.bombStage = new PIXI.Container();
+        this.app.stage.addChild(this.bombStage);
+
         /* ------------------------------------ IMAGES - add to canvas ------------------------------------ */
 
 
         this.bomb = new PIXI.Sprite(PIXI.loader.resources["images/bombv2.svg"].texture);
-        this.app.stage.addChild(this.bomb);
+        this.bombStage.addChild(this.bomb);
 
         this.clock_bg = new PIXI.Sprite(PIXI.loader.resources["images/clock.svg"].texture);
-        this.app.stage.addChild(this.clock_bg);
+        this.bombStage.addChild(this.clock_bg);
 
         this.cables = [];
         this.addCable(1, "images/cables/closed/1.svg", "images/cables/opened/1.svg", 200, 100);
@@ -214,7 +253,7 @@ export class Renderer {
         this.timer.anchor.set(0.5);
         this.timer.x = 435;
         this.timer.y = 480;
-        this.app.stage.addChild(this.timer);
+        this.bombStage.addChild(this.timer);
 
 
         this.clockwheel = new PIXI.Sprite(PIXI.loader.resources["images/circle.svg"].texture);
@@ -223,7 +262,7 @@ export class Renderer {
         this.clockwheel.height = 28;
         this.clockwheel.width = 28;
         this.clockwheel.anchor.set(0.5);
-        this.app.stage.addChild(this.clockwheel);
+        this.bombStage.addChild(this.clockwheel);
 
 
         this.timerDataStart = Date.now();
@@ -238,8 +277,7 @@ export class Renderer {
                 this.timer.rotation = Math.PI + rotation;
                 this.clockwheel.rotation = Math.PI + rotation;
             }
-            else
-            {
+            else {
                 this.timer.rotation = Math.PI * 3;
                 this.clockwheel.rotation = Math.PI * 3;
             }
@@ -248,16 +286,24 @@ export class Renderer {
         /* ------------------------------------ TEXT ------------------------------------ */
 
 
-        this.text = new PIXI.Text("", {
+        this.instructions = new PIXI.Text("", {
             fontFamily: 'Arial',
             fontSize: 36,
             fontWeight: 'bold',
-            fill: 'white'
+            fill: 'white',
+            align: 'center'
         });
-        this.text.y = this.app.screen.height - 135;
-        this.text.x = this.app.screen.width / 2 - this.text.width / 2;
+        this.instructions.y = this.app.screen.height - 135;
+        this.instructions.x = this.app.screen.width / 2 - this.instructions.width / 2;
 
-        this.app.stage.addChild(this.text);
+        this.bombStage.addChild(this.instructions);
+
+        // blur
+
+        this.blurFilter = new PIXI.filters.BlurFilter();
+        this.blurFilter.blur = 0;
+        this.bombStage.filters = [this.blurFilter];
+
 
         //
         this.onInit();

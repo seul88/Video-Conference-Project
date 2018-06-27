@@ -8,7 +8,11 @@ export class BombGame extends GameState {
         super();
     }
 
-    init(sapper, trainer) {
+    init(player1, player2) {
+
+        let sapper = (this.state.sapper == player1) ? player2 : player1;
+        let trainer = (this.state.trainer == player2) ? player1 : player2;
+
         // It will be sent to users
         this.state = {
             sapper: sapper,
@@ -47,7 +51,6 @@ export class BombGame extends GameState {
 
     checkWinState() {
         if (this.state.finished) {
-            clearTimeout(this.timeout);
             return false;
         }
 
@@ -68,6 +71,7 @@ export class BombGame extends GameState {
         }
 
         if (this.state.finished) {
+            clearTimeout(this.timeout);
             return true;
         }
     }

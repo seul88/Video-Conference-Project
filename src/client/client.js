@@ -161,8 +161,21 @@ class Client {
                         this.socket.emit('send', {
                             cmd: "ready_game"
                         });
-                    });
+                    }, () => {
 
+                        this.game = null;
+
+                        if(this.gameClient)
+                            this.gameClient.finish();
+                        this.gameClient = null;
+                        
+                        if(this.rendered)
+                            this.rendered.destroy();
+                        this.rendered = null;
+
+                        this.template.hideGameSplash();
+                        this.template.showPartnerSplash();
+                    });
 
                     break;
                 }
