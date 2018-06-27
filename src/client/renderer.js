@@ -184,6 +184,13 @@ export class Renderer {
         update();
     }
 
+    destroy()
+    {
+        PIXI.loader.reset();
+        document.getElementById("gamediv").innerHTML = "";
+        this.app.destroy();
+    }
+
     setup() {
         /* ------------------------------------ IMAGES - add to canvas ------------------------------------ */
 
@@ -230,6 +237,11 @@ export class Renderer {
 
                 this.timer.rotation = Math.PI + rotation;
                 this.clockwheel.rotation = Math.PI + rotation;
+            }
+            else
+            {
+                this.timer.rotation = Math.PI * 3;
+                this.clockwheel.rotation = Math.PI * 3;
             }
         });
 

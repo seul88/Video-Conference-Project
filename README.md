@@ -13,10 +13,10 @@ npm install webpack-cli --save
 
 ### With webpack installed
 
-Type in terminal:
+Type in two terminals:
 
 ```
-npx webpack
+npm run client
 npm run server
 ```
 

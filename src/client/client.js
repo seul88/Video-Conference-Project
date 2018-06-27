@@ -131,6 +131,12 @@ class Client {
                     this.template.hidePartnerSplash();
                     this.template.showWaitingSplash();
 
+                    this.game = null;
+                    this.gameClient.finish();
+                    this.gameClient = null;
+                    this.rendered.destroy();
+                    this.rendered = null;
+                    
                     break;
                 }
 
