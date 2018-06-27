@@ -38,10 +38,16 @@ export class Template {
 
     this.btn_ready.addEventListener('click', () => {
       this.onReady();
+      let rdy_button = document.getElementById('btn-ready');
+      rdy_button.firstChild.data = "Waiting...";
+      rdy_button.disabled = true;
     });
 
     this.btn_abandon.addEventListener('click', () => {
       this.onAbandon();
+      let rdy_button = document.getElementById('btn-ready');
+      rdy_button.firstChild.data = "I am ready";
+      rdy_button.disabled = false;
     });
   }
 
