@@ -36,8 +36,6 @@ export class Template {
     this.btn_ready = document.getElementById('btn-ready');
     this.btn_abandon = document.getElementById('btn-abandon');
 
-    this.btn_ready.firstChild.data = "I am ready";
-
     this.btn_ready.addEventListener('click', () => {
       this.onReady();
       this.btn_ready.firstChild.data = "Waiting...";
@@ -78,6 +76,8 @@ export class Template {
 
     let placeInGame = document.getElementById('videoInGame');
     placeInGame.className = 'video-on';
+
+    this.btn_ready.firstChild.data = "I am ready";
 
     /*
 
