@@ -48,6 +48,10 @@ export class Template {
   showGameSplash() {
     this._show(this.game_splash);
 
+    let placeInGame = document.getElementById('videoInGame');
+    placeInGame.className = 'video-on';
+
+    /*
     let videoWrapper = document.getElementById('videoWrapper');
     let placeInSplash = document.getElementById('videoInSplash');
     let placeInGame = document.getElementById('videoInGame');
@@ -56,14 +60,23 @@ export class Template {
     placeInSplash.innerHTML = '';
 
     placeInGame.appendChild(videoWrapper);
+    */
   }
 
   hideGameSplash() {
     this._hide(this.game_splash);
+
+    let placeInGame = document.getElementById('videoInGame');
+    placeInGame.className = 'video-off';
   }
 
   showPartnerSplash() {
     this._show(this.partner_splash);
+
+    let placeInGame = document.getElementById('videoInGame');
+    placeInGame.className = 'video-on';
+
+    /*
 
     let videoWrapper = document.getElementById('videoWrapper');
     let placeInSplash = document.getElementById('videoInSplash');
@@ -73,10 +86,15 @@ export class Template {
     placeInSplash.innerHTML = '';
 
     placeInSplash.appendChild(videoWrapper);
+
+    */
   }
 
   hidePartnerSplash() {
     this._hide(this.partner_splash);
+
+    let placeInGame = document.getElementById('videoInGame');
+    placeInGame.className = 'video-off';
   }
 
   showWaitingSplash() {
