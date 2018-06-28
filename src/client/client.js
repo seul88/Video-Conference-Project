@@ -126,16 +126,18 @@ class Client {
                         cmd: "finish_game",
                     }
                     */
+                    this.rendered.destroy();
+                    this.rendered = null;
+
+                    this.gameClient.finish();
+                    this.gameClient = null;
+
+                    this.game = null;
+
                     this.closeRTC();
 
                     this.template.hidePartnerSplash();
                     this.template.showWaitingSplash();
-
-                    this.game = null;
-                    this.gameClient.finish();
-                    this.gameClient = null;
-                    this.rendered.destroy();
-                    this.rendered = null;
                     
                     break;
                 }
