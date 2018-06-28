@@ -36,18 +36,15 @@ export class Template {
     this.btn_ready = document.getElementById('btn-ready');
     this.btn_abandon = document.getElementById('btn-abandon');
 
+    this.btn_ready.firstChild.data = "I am ready";
+
     this.btn_ready.addEventListener('click', () => {
       this.onReady();
-      let rdy_button = document.getElementById('btn-ready');
-      rdy_button.firstChild.data = "Waiting...";
-      rdy_button.disabled = true;
+      this.btn_ready.firstChild.data = "Waiting...";
     });
 
     this.btn_abandon.addEventListener('click', () => {
       this.onAbandon();
-      let rdy_button = document.getElementById('btn-ready');
-      rdy_button.firstChild.data = "I am ready";
-      rdy_button.disabled = false;
     });
   }
 

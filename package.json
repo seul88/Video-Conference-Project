@@ -4,6 +4,7 @@
   "description": "Video conference project",
   "main": "index.js",
   "scripts": {
+    "build": "webpack",
     "client": "webpack --watch",
     "server": "node ./dist/server.js 3000 localhost"
   },

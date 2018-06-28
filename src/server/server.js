@@ -4,7 +4,9 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const crypto = require("crypto");
 
+
 import { GameServer } from './../shared/GameServer';
+import { Utilities } from './../shared/Utilities'
 
 class Server {
     constructor() {
@@ -224,6 +226,8 @@ class Server {
 
     matchLobby() {
         if (this.lobby.length >= 2) {
+            this.lobby = Utilities.shuffle(this.lobby);
+
             this.createRoom(this.lobby[0], this.lobby[1]);
 
             this.lobby.shift();
