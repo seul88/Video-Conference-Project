@@ -168,8 +168,8 @@ class Server {
                 }
             case "abandon":
                 {
-                    if (player.game != null) {
-                        this.finishGame(player.game);
+                    if (player.room != null) {
+                        this.finishRoom(player.room);
                         this.matchLobby();
                     }
 
